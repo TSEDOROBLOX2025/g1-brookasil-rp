@@ -6,236 +6,288 @@
     <title>g1 Brookasil - O portal de notícias de Brookasil</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* --- DESIGN SYSTEM G1 ENTERPRISE --- */
         :root {
             --g1-red: #C4170C;
-            --g1-dark-red: #9B120A;
-            --g1-bg: #FFFFFF;
-            --g1-text: #333333;
-            --g1-sub: #666666;
-            --g1-border: #E5E5E5;
-            --g1-grey: #F6F6F6;
-            --shadow: 0 4px 20px rgba(0,0,0,0.08);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --g1-dark: #111111;
+            --g1-grey: #f6f6f6;
+            --g1-text: #333;
+            --g1-sub: #666;
+            --g1-border: #e5e5e5;
+            --ny-gold: #D4AF37;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
 
+        /* --- RESET & BASE --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-        body { font-family: 'Open Sans', sans-serif; background: var(--g1-bg); color: var(--g1-text); overflow-x: hidden; }
+        body { font-family: 'Open Sans', sans-serif; background: #fff; color: var(--g1-text); overflow-x: hidden; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .hidden { display: none !important; }
+        button, .btn { cursor: pointer; border: none; transition: var(--transition); border-radius: 4px; font-weight: 700; }
 
         /* --- SPLASH SCREEN --- */
-        #splash-screen {
+        #splash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--g1-red); z-index: 9999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.8s ease;
         }
-        .splash-logo { font-size: 80px; font-weight: 900; color: white; letter-spacing: -6px; margin-bottom: 20px; animation: zoomIn 1.5s ease; }
-        .loading-bar-container { width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden; }
-        .loading-bar { width: 0%; height: 100%; background: white; transition: width 0.4s; }
-        .loading-text { color: white; margin-top: 15px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-
-        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .splash-logo { font-size: 90px; font-weight: 900; color: #fff; letter-spacing: -6px; margin-bottom: 20px; }
+        .loader-bg { width: 220px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden; }
+        #loader-bar { width: 0%; height: 100%; background: #fff; transition: width 0.3s; }
+        .loader-text { color: #fff; margin-top: 15px; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
 
         /* --- HEADER & NAVIGATION --- */
-        header { 
-            background: var(--g1-red); padding: 12px 0; position: sticky; top: 0; z-index: 1000;
-            box-shadow: var(--shadow); display: flex; align-items: center;
-        }
-        .header-container { display: flex; align-items: center; width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        header { background: var(--g1-red); height: 64px; position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow); }
+        .header-wrap { display: flex; align-items: center; height: 100%; justify-content: space-between; }
         
-        /* Menu Hamburger */
-        .menu-trigger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; margin-right: 25px; padding: 10px; z-index: 1001; }
-        .menu-trigger span { width: 25px; height: 3px; background: white; border-radius: 2px; transition: var(--transition); }
-        .menu-trigger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-        .menu-trigger.active span:nth-child(2) { opacity: 0; }
-        .menu-trigger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -7px); }
+        .menu-btn { color: #fff; font-size: 28px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .logo { font-size: 32px; font-weight: 900; color: #fff; letter-spacing: -2px; cursor: pointer; }
+        .logo span { font-weight: 300; font-size: 18px; opacity: 0.8; padding-left: 5px; border-left: 1px solid rgba(255,255,255,0.3); margin-left: 8px; }
 
-        .logo { font-size: 34px; font-weight: 900; color: white; letter-spacing: -2px; cursor: pointer; }
-        .logo span { font-weight: 300; font-size: 22px; margin-left: 5px; opacity: 0.8; }
+        .header-meta { display: flex; align-items: center; gap: 20px; color: #fff; font-size: 12px; font-weight: 700; }
+        #live-clock { background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 4px; }
 
-        .header-info { margin-left: auto; display: flex; align-items: center; gap: 20px; color: white; font-size: 11px; font-weight: 700; }
-        #live-clock { color: #fff; background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; }
-
-        /* --- SIDE MENU OVERLAY --- */
-        #side-menu {
-            position: fixed; top: 0; left: -320px; width: 320px; height: 100%;
-            background: white; z-index: 1000; transition: left 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            box-shadow: 10px 0 30px rgba(0,0,0,0.1); padding: 80px 30px;
+        /* --- SIDE MENU --- */
+        #side-menu { 
+            position: fixed; top: 0; left: -320px; width: 320px; height: 100%; background: #fff; 
+            z-index: 1001; transition: var(--transition); padding: 40px 0; box-shadow: 15px 0 50px rgba(0,0,0,0.1);
         }
         #side-menu.open { left: 0; }
-        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
-        .side-nav-links { list-style: none; }
-        .side-nav-links li { margin-bottom: 15px; border-bottom: 1px solid var(--g1-border); }
-        .side-nav-links a { display: block; padding: 10px 0; color: var(--g1-red); font-weight: 800; font-size: 16px; text-transform: uppercase; }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; backdrop-filter: blur(3px); }
+        .nav-list { list-style: none; padding: 20px; }
+        .nav-list li { margin-bottom: 2px; }
+        .nav-list a { display: block; padding: 12px 15px; color: var(--g1-red); text-transform: uppercase; font-weight: 800; font-size: 14px; text-decoration: none; border-radius: 4px; }
+        .nav-list a:hover { background: var(--g1-grey); }
+        .nav-list .admin-link { color: #000; border-top: 1px solid var(--g1-border); margin-top: 15px; padding-top: 20px; }
 
-        /* --- HOME LAYOUT --- */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .main-manchete { margin: 30px 0; cursor: pointer; position: relative; }
-        .manchete-img { width: 100%; height: 500px; object-fit: cover; border-radius: 8px; box-shadow: var(--shadow); }
-        .manchete-content { padding: 25px 0; border-bottom: 1px solid var(--g1-border); }
-        .manchete-content h1 { font-size: 48px; color: var(--g1-red); line-height: 1.1; margin-bottom: 15px; letter-spacing: -2px; }
-        .manchete-content p { font-size: 20px; color: var(--g1-sub); }
+        /* --- NEWS LAYOUT --- */
+        .home-grid { margin: 30px 0; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .hero-card { cursor: pointer; border-bottom: 1px solid var(--g1-border); padding-bottom: 25px; }
+        .hero-card img { width: 100%; height: 480px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; }
+        .hero-card h1 { font-size: 44px; line-height: 1; color: var(--g1-red); margin-bottom: 15px; letter-spacing: -1.5px; }
+        .hero-card p { font-size: 18px; color: var(--g1-sub); }
 
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; margin: 40px 0; }
-        .card { cursor: pointer; border-bottom: 1px solid var(--g1-border); padding-bottom: 20px; transition: var(--transition); }
-        .card:hover { opacity: 0.7; transform: translateY(-3px); }
-        .card img { width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 12px; }
-        .card .tema { color: var(--g1-red); font-weight: 800; font-size: 12px; text-transform: uppercase; }
-        .card h3 { font-size: 20px; color: var(--g1-red); margin: 8px 0; line-height: 1.3; }
+        .secondary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 50px; }
+        .card { cursor: pointer; border-bottom: 1px solid var(--g1-border); padding-bottom: 15px; }
+        .card:hover { opacity: 0.8; }
+        .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 10px; }
+        .card .label { color: var(--g1-red); font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .card h3 { font-size: 18px; line-height: 1.3; color: var(--g1-red); }
 
-        /* --- FORMS & PANELS --- */
-        .admin-box { background: var(--g1-grey); padding: 30px; border-radius: 12px; margin-top: 30px; border: 1px solid var(--g1-border); }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; }
-        .badge-dono { background: #000; }
-        .badge-jor { background: var(--g1-red); }
-        .badge-user { background: #999; }
+        /* --- ADMIN PANELS --- */
+        .panel { background: var(--g1-grey); border-radius: 12px; padding: 40px; margin: 40px 0; border: 1px solid var(--g1-border); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--g1-sub); }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 15px; border: 1px solid var(--g1-border); border-radius: 6px; font-family: inherit; font-size: 16px; }
+        .btn-red { background: var(--g1-red); color: #fff; padding: 15px 30px; font-size: 14px; text-transform: uppercase; }
+        .btn-red:hover { background: #9B120A; }
+        
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #fff; }
+        .b-dono { background: #000; }
+        .b-jor { background: var(--g1-red); }
+        .b-user { background: #999; }
 
-        .input-g1 { width: 100%; padding: 15px; border: 1px solid var(--g1-border); border-radius: 6px; margin-bottom: 15px; font-size: 16px; }
-        .btn-g1 { background: var(--g1-red); color: white; border: none; padding: 15px 30px; border-radius: 6px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); }
-        .btn-g1:hover { background: var(--g1-dark-red); }
+        /* --- ARTICLE VIEW --- */
+        .article-page { max-width: 800px; margin: 60px auto; }
+        .article-page h1 { font-size: 52px; line-height: 1.1; margin-bottom: 20px; }
+        .article-meta { border-top: 1px solid var(--g1-border); padding: 20px 0; margin-bottom: 40px; font-size: 13px; color: var(--g1-sub); }
+        .article-body { font-size: 20px; line-height: 1.8; color: #222; }
+        .article-body img { width: 100%; border-radius: 8px; margin: 30px 0; }
 
         /* --- FOOTER --- */
-        footer { background: var(--g1-grey); padding: 60px 0; border-top: 1px solid var(--g1-border); margin-top: 80px; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
-        .footer-col h4 { color: var(--g1-red); margin-bottom: 20px; text-transform: uppercase; }
-        
-        .hidden { display: none !important; }
+        footer { background: var(--g1-grey); padding: 80px 0; border-top: 1px solid var(--g1-border); margin-top: 100px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; }
+        .footer-logo { font-size: 40px; font-weight: 900; color: var(--g1-red); margin-bottom: 20px; }
 
-        @media (max-width: 768px) {
-            .manchete-content h1 { font-size: 32px; }
-            .header-info { display: none; }
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 992px) {
+            .home-grid { grid-template-columns: 1fr; }
+            .secondary-grid { grid-template-columns: 1fr 1fr; }
+            .hero-card h1 { font-size: 32px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="splash-screen">
+    <div id="splash">
         <div class="splash-logo">g1</div>
-        <div class="loading-bar-container">
-            <div class="loading-bar" id="load-bar"></div>
+        <div class="loader-bg">
+            <div id="loader-bar"></div>
         </div>
-        <p class="loading-text">Carregando notícias...</p>
+        <p class="loader-text">Carregando notícias de Brookasil...</p>
     </div>
 
     <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
     <div id="side-menu">
-        <ul class="side-nav-links">
-            <li><a href="#" onclick="router.go('home')">Home</a></li>
-            <li><a href="#" onclick="router.go('politica')">Política</a></li>
-            <li><a href="#" onclick="router.go('filiacao')">Filiação Partidária</a></li>
-            <li><a href="#" onclick="router.go('candidatura')">Candidatura (CDE)</a></li>
-            <li><a href="#" onclick="router.go('divulgacao')">Divulgação de Trabalho</a></li>
-            <li><a href="#" onclick="router.go('ajuda')">Ajuda</a></li>
-            <li id="menu-auth-btn"><a href="#" onclick="router.go('login')">Minha Conta</a></li>
-            <li id="menu-panel-btn" class="hidden"><a href="#" onclick="router.go('painel')" style="color: #000;">Painel de Controle</a></li>
-        </ul>
+        <ul class="nav-list" id="nav-links">
+            </ul>
     </div>
 
     <header>
-        <div class="header-container">
-            <div class="menu-trigger" id="hamburger" onclick="toggleMenu()">
-                <span></span><span></span><span></span>
-            </div>
-            <div class="logo" onclick="router.go('home')">g1 <span>Brookasil</span></div>
-            <div class="header-info">
-                <span id="clima">28°C ENSOLARADO</span>
+        <div class="container header-wrap">
+            <div class="menu-btn" onclick="toggleMenu()">☰</div>
+            <div class="logo" onclick="app.navigate('home')">g1 <span>brookasil</span></div>
+            <div class="header-meta">
+                <span id="weather">24°C Brookasil</span>
                 <span id="live-clock">00:00:00</span>
             </div>
         </div>
     </header>
 
-    <main id="app" class="container">
-        </main>
+    <main id="app-root" class="container"></main>
 
     <footer>
-        <div class="container footer-grid">
-            <div class="footer-col">
-                <h4>g1 Brookasil</h4>
-                <p>O portal de notícias da região de Brookasil. Informação com agilidade e isenção.</p>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-logo">g1</div>
+                    <p>O portal de notícias de Brookasil. Informação com credibilidade.</p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:20px">EDITORIAS</h4>
+                    <p>Política • Esporte • Educação • Polícia</p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:20px">SERVIÇOS</h4>
+                    <p>Filiação Partidária • Candidatura CDE</p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:20px">AJUDA</h4>
+                    <p onclick="app.navigate('ajuda')" style="cursor:pointer">Central de Atendimento</p>
+                </div>
             </div>
-            <div class="footer-col">
-                <h4>Editorias</h4>
-                <p>Política • Polícia • Esporte • Educação</p>
-            </div>
-            <div class="footer-col">
-                <h4>Acesso</h4>
-                <p onclick="router.go('login')" style="cursor:pointer">Login do Jornalista</p>
-                <p onclick="router.go('ajuda')" style="cursor:pointer">Central de Ajuda</p>
-            </div>
-        </div>
-        <div class="container" style="text-align:center; margin-top:40px; font-size:12px; opacity:0.6;">
-            &copy; 2025 Brookasil Notícias S.A. Todos os direitos reservados.
         </div>
     </footer>
 
     <script>
-        /* --- CONFIGURAÇÃO FIREBASE / API --- */
+        /* --- CONFIG & STATE --- */
         const DB_URL = "https://g1-brookasil-default-rtdb.firebaseio.com";
-        
-        // Estado Global
         const state = {
-            user: JSON.parse(localStorage.getItem('g1_user')) || null,
+            user: JSON.parse(localStorage.getItem('g1_session')) || null,
             news: [],
-            usersList: []
+            users: []
         };
 
-        /* --- ENGINE DE ROTEAMENTO & VIEWS --- */
-        const router = {
-            async go(path, params = null) {
-                const app = document.getElementById('app');
-                app.innerHTML = '<div style="padding:100px; text-align:center;">Carregando...</div>';
+        /* --- CORE ENGINE --- */
+        const app = {
+            async init() {
+                this.updateClock();
+                setInterval(() => this.updateClock(), 1000);
+                
+                // Splash Logic
+                const bar = document.getElementById('loader-bar');
+                let p = 0;
+                const int = setInterval(() => {
+                    p += Math.random() * 25;
+                    bar.style.width = Math.min(p, 100) + '%';
+                    if(p >= 100) {
+                        clearInterval(int);
+                        this.loadData().then(() => {
+                            document.getElementById('splash').style.opacity = '0';
+                            setTimeout(() => {
+                                document.getElementById('splash').style.display = 'none';
+                                this.navigate('home');
+                            }, 600);
+                        });
+                    }
+                }, 150);
+            },
+
+            async loadData() {
+                try {
+                    const [nRes, uRes] = await Promise.all([
+                        fetch(`${DB_URL}/news.json`).then(r => r.json()),
+                        fetch(`${DB_URL}/users.json`).then(r => r.json())
+                    ]);
+                    state.news = nRes ? Object.values(nRes).reverse() : [];
+                    state.users = uRes || {};
+                } catch(e) { console.error("Erro ao carregar banco."); }
+            },
+
+            navigate(view, params = null) {
                 toggleMenu(false);
                 window.scrollTo(0,0);
-
-                switch(path) {
-                    case 'home': await renderHome(app); break;
-                    case 'login': renderLogin(app); break;
-                    case 'news': await renderArticle(app, params); break;
-                    case 'painel': renderPainel(app); break;
-                    case 'ajuda': renderAjuda(app); break;
-                    case 'filiacao': renderFiliacao(app); break;
-                    case 'divulgacao': renderDivulgacao(app); break;
-                    default: await renderHome(app);
-                }
-                this.updateUI();
+                const root = document.getElementById('app-root');
+                root.style.opacity = '0';
+                
+                setTimeout(() => {
+                    this.render(view, root, params);
+                    root.style.opacity = '1';
+                    this.renderMenu();
+                }, 200);
             },
-            updateUI() {
-                const panelBtn = document.getElementById('menu-panel-btn');
-                if(state.user && (state.user.role === 'dono' || state.user.role === 'jornalista')) {
-                    panelBtn.classList.remove('hidden');
-                } else {
-                    panelBtn.classList.add('hidden');
+
+            render(view, root, params) {
+                switch(view) {
+                    case 'home': renderHome(root); break;
+                    case 'article': renderArticle(root, params); break;
+                    case 'login': renderLogin(root); break;
+                    case 'painel-dono': renderDono(root); break;
+                    case 'painel-jor': renderJornalista(root); break;
+                    case 'ajuda': renderAjuda(root); break;
+                    case 'filiacao': renderExternal(root, 'Filiação Partidária', 'https://tsedoroblox2025.github.io/filia-o.html/'); break;
+                    case 'candidatura': renderExternal(root, 'Candidatura CDE', 'https://tsedoroblox2025.github.io/candidatura-cde/'); break;
                 }
+            },
+
+            updateClock() {
+                const now = new Date();
+                document.getElementById('live-clock').innerText = now.toLocaleTimeString('pt-BR', {timeZone: 'America/Maceio'});
+            },
+
+            renderMenu() {
+                const list = document.getElementById('nav-links');
+                let html = `
+                    <li><a href="#" onclick="app.navigate('home')">Home</a></li>
+                    <li><a href="#" onclick="app.navigate('ajuda')">Ajuda</a></li>
+                    <li><a href="#" onclick="app.navigate('filiacao')">Filiação Partidária</a></li>
+                    <li><a href="#" onclick="app.navigate('candidatura')">Candidatura (CDE)</a></li>
+                `;
+
+                if(state.user) {
+                    if(state.user.role === 'dono') html += `<li><a href="#" onclick="app.navigate('painel-dono')" class="admin-link">👑 Painel do Dono</a></li>`;
+                    if(state.user.role === 'jornalista') html += `<li><a href="#" onclick="app.navigate('painel-jor')" class="admin-link">📰 Painel Jornalista</a></li>`;
+                    html += `<li><a href="#" onclick="app.logout()" style="color:#666">Sair (@${state.user.user})</a></li>`;
+                } else {
+                    html += `<li><a href="#" onclick="app.navigate('login')" class="admin-link">Minha Conta</a></li>`;
+                }
+                list.innerHTML = html;
+            },
+
+            logout() {
+                localStorage.removeItem('g1_session');
+                state.user = null;
+                this.navigate('home');
             }
         };
 
-        /* --- VIEW: HOME --- */
-        async function renderHome(el) {
-            const data = await api.fetch('/news');
-            state.news = data ? Object.values(data).reverse() : [];
-            
-            if(state.news.length === 0) {
-                el.innerHTML = "<p style='padding:50px; text-align:center;'>Nenhuma notícia publicada ainda.</p>";
-                return;
-            }
-
-            const principal = state.news[0];
-            const secundarias = state.news.slice(1, 7);
+        /* --- VIEWS --- */
+        function renderHome(el) {
+            const top = state.news[0] || { titulo: "Bem-vindo", subtitulo: "Carregando...", imagem: "" };
+            const sub = state.news.slice(1, 7);
 
             el.innerHTML = `
-                <section class="main-manchete" onclick="router.go('news', '${principal.id}')">
-                    <img src="${principal.imagem}" class="manchete-img">
-                    <div class="manchete-content">
-                        <span class="badge badge-jor" style="margin-bottom:10px; display:inline-block;">Destaque</span>
-                        <h1>${principal.titulo}</h1>
-                        <p>${principal.subtitulo}</p>
+                <section class="home-grid">
+                    <div class="hero-card" onclick="app.navigate('article', '${top.id}')">
+                        <img src="${top.imagem}">
+                        <h1>${top.titulo}</h1>
+                        <p>${top.subtitulo}</p>
+                    </div>
+                    <div class="trending">
+                        <h3 style="border-bottom:3px solid var(--g1-red); display:inline-block; margin-bottom:20px;">MAIS LIDAS</h3>
+                        ${state.news.slice(0, 5).map((n, i) => `
+                            <div style="margin-bottom:15px; cursor:pointer;" onclick="app.navigate('article', '${n.id}')">
+                                <span style="font-size:32px; font-weight:900; color:var(--g1-border); float:left; margin-right:15px">${i+1}</span>
+                                <p style="font-weight:700; font-size:14px; color:var(--g1-red)">${n.titulo}</p>
+                            </div>
+                        `).join('')}
                     </div>
                 </section>
-                <div class="news-grid">
-                    ${secundarias.map(n => `
-                        <div class="card" onclick="router.go('news', '${n.id}')">
+                <div class="secondary-grid">
+                    ${sub.map(n => `
+                        <div class="card" onclick="app.navigate('article', '${n.id}')">
                             <img src="${n.imagem}">
-                            <span class="tema">${n.tema}</span>
+                            <span class="label">${n.tema}</span>
                             <h3>${n.titulo}</h3>
                         </div>
                     `).join('')}
@@ -243,270 +295,160 @@
             `;
         }
 
-        /* --- VIEW: LOGIN / CADASTRO --- */
+        function renderArticle(el, id) {
+            const n = state.news.find(x => x.id == id);
+            if(!n) return;
+            el.innerHTML = `
+                <div class="article-page">
+                    <span class="badge b-jor">${n.tema}</span>
+                    <h1 style="margin-top:15px">${n.titulo}</h1>
+                    <h2 style="font-size:24px; color:var(--g1-sub); font-weight:400; margin-bottom:30px">${n.subtitulo}</h2>
+                    <div class="article-meta">
+                        Por <strong>${n.autor}</strong>, g1 Brookasil — Alagoas<br>
+                        ${new Date(n.data).toLocaleString('pt-BR')}
+                    </div>
+                    <div class="article-body">
+                        <img src="${n.imagem}">
+                        <p>${n.conteudo}</p>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderLogin(el) {
             el.innerHTML = `
-                <div class="admin-box" style="max-width: 500px; margin: 60px auto;">
-                    <h2 style="text-align:center; margin-bottom:30px; color:var(--g1-red);">Acesse sua Conta g1</h2>
-                    <input type="text" id="log-user" class="input-g1" placeholder="@usuário">
-                    <input type="password" id="log-pass" class="input-g1" placeholder="Senha">
-                    <button class="btn-g1" style="width:100%;" onclick="auth.login()">Entrar</button>
-                    <hr style="margin:20px 0; opacity:0.2;">
-                    <p style="text-align:center; font-size:14px;">Não tem conta? <a href="#" onclick="renderCadastro()" style="color:var(--g1-red); font-weight:700;">Cadastre-se</a></p>
+                <div class="panel" style="max-width:500px; margin: 60px auto;">
+                    <h2 style="text-align:center; margin-bottom:30px;">Acessar g1 Brookasil</h2>
+                    <div class="form-group">
+                        <label>@usuário</label>
+                        <input type="text" id="l-user">
+                    </div>
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <input type="password" id="l-pass">
+                    </div>
+                    <button class="btn btn-red" style="width:100%" onclick="auth.handle()">Entrar / Cadastrar</button>
+                    <p style="font-size:11px; color:#999; margin-top:15px; text-align:center">Dica: Se você for o Dono, use a senha mestre no cadastro.</p>
                 </div>
             `;
         }
 
-        /* --- VIEW: PAINÉIS (DONO / JORNALISTA) --- */
-        async function renderPainel(el) {
-            if(!state.user) return router.go('login');
-            
-            if(state.user.role === 'dono') {
-                const users = await api.fetch('/users');
-                const list = users ? Object.entries(users) : [];
-                
-                el.innerHTML = `
-                    <div class="admin-box fade-in">
-                        <h1 style="color:var(--g1-red); margin-bottom:10px;">👑 Painel do Dono</h1>
-                        <p style="margin-bottom:30px;">Gerenciamento de acessos e usuários do g1 Brookasil.</p>
-                        
-                        <div style="overflow-x:auto;">
-                            <table style="width:100%; border-collapse:collapse; background:white; border-radius:8px;">
-                                <tr style="text-align:left; background:#eee;">
-                                    <th style="padding:15px;">Usuário</th>
-                                    <th style="padding:15px;">Cargo</th>
-                                    <th style="padding:15px; text-align:right;">Ação</th>
+        function renderDono(el) {
+            if(state.user?.role !== 'dono') return app.navigate('home');
+            const uList = Object.entries(state.users);
+            el.innerHTML = `
+                <div class="panel">
+                    <h1>👑 Painel de Controle (Dono)</h1>
+                    <table style="width:100%; border-collapse:collapse; margin-top:30px; background:#fff;">
+                        <thead><tr style="background:#eee; text-align:left;">
+                            <th style="padding:15px">Usuário</th><th style="padding:15px">Cargo</th><th style="padding:15px">Ação</th>
+                        </tr></thead>
+                        <tbody>
+                            ${uList.map(([id, u]) => `
+                                <tr style="border-bottom:1px solid #ddd">
+                                    <td style="padding:15px">@${u.user}</td>
+                                    <td style="padding:15px"><span class="badge ${u.role === 'dono' ? 'b-dono' : u.role === 'jornalista' ? 'b-jor' : 'b-user'}">${u.role}</span></td>
+                                    <td style="padding:15px">
+                                        <button onclick="auth.updateRole('${id}', 'jornalista')" style="font-size:10px; color:blue">Virar Jornalista</button> | 
+                                        <button onclick="auth.updateRole('${id}', 'usuario')" style="font-size:10px; color:red">Rebaixar</button>
+                                    </td>
                                 </tr>
-                                ${list.map(([id, u]) => `
-                                    <tr style="border-bottom:1px solid #eee;">
-                                        <td style="padding:15px;"><strong>${u.nome}</strong><br><small>@${u.user}</small></td>
-                                        <td style="padding:15px;"><span class="badge ${u.role === 'dono' ? 'badge-dono' : u.role === 'jornalista' ? 'badge-jor' : 'badge-user'}">${u.role}</span></td>
-                                        <td style="padding:15px; text-align:right;">
-                                            ${u.role !== 'dono' ? `
-                                                <button onclick="admin.toggleJornalista('${id}', '${u.role}')" style="background:none; border:none; color:var(--g1-red); font-weight:700; cursor:pointer;">
-                                                    ${u.role === 'jornalista' ? 'Rebaixar' : 'Promover'}
-                                                </button>
-                                            ` : '--'}
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </table>
-                        </div>
-                    </div>
-                `;
-            } else if(state.user.role === 'jornalista') {
-                const data = await api.fetch('/news');
-                const myNews = data ? Object.values(data).filter(n => n.autorId === state.user.id) : [];
-
-                el.innerHTML = `
-                    <div class="admin-box">
-                        <h1 style="color:var(--g1-red);">📰 Painel do Jornalista</h1>
-                        <button class="btn-g1" style="margin:20px 0;" onclick="renderEditor()">+ Nova Notícia</button>
-                        
-                        <div class="news-grid">
-                            ${myNews.map(n => `
-                                <div class="card" style="background:white; padding:15px; border-radius:8px;">
-                                    <h4>${n.titulo}</h4>
-                                    <div style="margin-top:10px; display:flex; gap:10px;">
-                                        <button onclick="router.go('news', '${n.id}')" style="font-size:11px;">Ver</button>
-                                        <button onclick="admin.deleteNews('${n.id}')" style="font-size:11px; color:red;">Excluir</button>
-                                    </div>
-                                </div>
                             `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        function renderEditor() {
-            const el = document.getElementById('app');
-            el.innerHTML = `
-                <div class="admin-box">
-                    <h2>Nova Notícia</h2>
-                    <input type="text" id="n-titulo" class="input-g1" placeholder="Título da Manchete">
-                    <input type="text" id="n-sub" class="input-g1" placeholder="Subtítulo">
-                    <input type="text" id="n-img" class="input-g1" placeholder="URL da Imagem">
-                    <select id="n-tema" class="input-g1">
-                        <option value="POLÍTICA">Política</option>
-                        <option value="POLÍCIA">Polícia</option>
-                        <option value="ESPORTE">Esporte</option>
-                        <option value="ENTRETENIMENTO">Entretenimento</option>
-                    </select>
-                    <textarea id="n-content" class="input-g1" style="height:300px;" placeholder="Conteúdo da notícia..."></textarea>
-                    <button class="btn-g1" onclick="admin.saveNews()">Publicar Agora</button>
+                        </tbody>
+                    </table>
                 </div>
             `;
         }
 
-        /* --- VIEW: ARTIGO --- */
-        async function renderArticle(el, id) {
-            const n = state.news.find(x => x.id === id) || await api.fetch(`/news/${id}`);
-            if(!n) return router.go('home');
-
+        function renderJornalista(el) {
+            if(state.user?.role !== 'jornalista' && state.user?.role !== 'dono') return app.navigate('home');
             el.innerHTML = `
-                <article style="max-width:800px; margin:40px auto;">
-                    <span class="badge badge-jor">${n.tema}</span>
-                    <h1 style="font-size:42px; margin:20px 0; line-height:1.1;">${n.titulo}</h1>
-                    <p style="font-size:22px; color:var(--g1-sub); margin-bottom:30px;">${n.subtitulo}</p>
-                    <div style="padding:15px 0; border-top:1px solid #eee; margin-bottom:30px; font-size:13px; color:#999;">
-                        Por <strong>${n.autorNome}</strong>, g1 Brookasil — Brookasil<br>
-                        ${new Date(n.data).toLocaleString()}
-                    </div>
-                    <img src="${n.imagem}" style="width:100%; border-radius:8px; margin-bottom:30px;">
-                    <div style="font-size:19px; line-height:1.8; color:#333;">${n.conteudo.replace(/\n/g, '<br><br>')}</div>
-                </article>
+                <div class="panel">
+                    <h2>📰 Central do Jornalista</h2>
+                    <div class="form-group"><label>Título</label><input type="text" id="n-titulo"></div>
+                    <div class="form-group"><label>Subtítulo</label><input type="text" id="n-sub"></div>
+                    <div class="form-group"><label>Tema</label><select id="n-tema">
+                        <option>POLÍTICA</option><option>ESPORTE</option><option>EDUCAÇÃO</option><option>POLÍCIA</option>
+                    </select></div>
+                    <div class="form-group"><label>URL Imagem</label><input type="text" id="n-img"></div>
+                    <div class="form-group"><label>Conteúdo</label><textarea id="n-content" style="height:200px"></textarea></div>
+                    <button class="btn btn-red" onclick="news.publish()">Publicar Matéria</button>
+                </div>
             `;
         }
 
-        /* --- LÓGICA CORE --- */
-        const api = {
-            async fetch(path) {
-                const r = await fetch(`${DB_URL}${path}.json`);
-                return r.json();
-            },
-            async post(path, data) {
-                return fetch(`${DB_URL}${path}.json`, { method: 'POST', body: JSON.stringify(data) });
-            },
-            async patch(path, data) {
-                return fetch(`${DB_URL}${path}.json`, { method: 'PATCH', body: JSON.stringify(data) });
-            },
-            async delete(path) {
-                return fetch(`${DB_URL}${path}.json`, { method: 'DELETE' });
-            }
-        };
+        function renderAjuda(el) {
+            el.innerHTML = `
+                <div class="article-page">
+                    <h1>Central de Ajuda</h1>
+                    <div class="article-body">
+                        <p><strong>Como criar conta?</strong> Basta ir em "Minha Conta", digitar um @usuário e uma senha. Se o usuário não existir, ele será criado automaticamente.</p>
+                        <p><strong>Como postar notícias?</strong> Apenas usuários promovidos a "Jornalista" pelo Dono podem postar.</p>
+                    </div>
+                </div>
+            `;
+        }
 
+        function renderExternal(el, title, url) {
+            el.innerHTML = `
+                <div class="panel" style="text-align:center">
+                    <h1>${title}</h1>
+                    <p style="margin:20px 0">Você está sendo redirecionado para o sistema externo de Brookasil.</p>
+                    <a href="${url}" target="_blank" class="btn btn-red" style="text-decoration:none; display:inline-block">Acessar Portal Externo</a>
+                </div>
+            `;
+        }
+
+        /* --- LOGIC HELPERS --- */
         const auth = {
-    // Cadastro: O usuário escolhe o @, mas o cargo é definido pela senha
-    async cadastrar() {
-        const nome = document.getElementById('reg-nome').value;
-        const user = document.getElementById('reg-user').value.replace('@', '');
-        const pass = document.getElementById('reg-pass').value;
-        const foto = document.getElementById('reg-foto').value || 'https://i.pravatar.cc/150';
+            async handle() {
+                const u = document.getElementById('l-user').value.replace('@', '');
+                const p = document.getElementById('l-pass').value;
+                if(!u || !p) return alert("Preencha tudo.");
 
-        if (!nome || !user || !pass) return alert("Preencha todos os campos obrigatórios.");
+                const role = (p === 'Brookasil1234') ? 'dono' : 'usuario';
+                const userData = { user: u, pass: p, role: role, nome: u };
 
-        // Regra de Ouro: Se a senha for a secreta, ele já nasce como DONO
-        const role = (pass === 'Brookasil1234') ? 'dono' : 'usuario';
-
-        const novoUsuario = {
-            nome,
-            user: `@${user}`,
-            pass,
-            foto,
-            role,
-            dataCadastro: new Date().toISOString()
-        };
-
-        try {
-            // Salva no Firebase usando o @usuário como chave única
-            await api.patch(`/users/${user}`, novoUsuario);
-            alert(role === 'dono' ? "Bem-vindo, Dono! Acesso total liberado." : "Conta criada com sucesso!");
-            this.saveSession({ id: user, ...novoUsuario });
-        } catch (e) {
-            alert("Erro ao criar conta. Tente outro @usuário.");
-        }
-    },
-
-    async login() {
-        const userDigitado = document.getElementById('log-user').value.replace('@', '');
-        const passDigitada = document.getElementById('log-pass').value;
-
-        // Busca o usuário direto pela chave no Firebase
-        const u = await api.fetch(`/users/${userDigitado}`);
-
-        if (u && u.pass === passDigitada) {
-            this.saveSession({ id: userDigitado, ...u });
-        } else {
-            alert("Usuário não encontrado ou senha incorreta.");
-        }
-    },
-
-    saveSession(data) {
-        state.user = data;
-        localStorage.setItem('g1_user', JSON.stringify(data));
-        router.go('home');
-    }
-};
-
-            saveSession(data) {
-                state.user = data;
-                localStorage.setItem('g1_user', JSON.stringify(data));
-                router.go('home');
+                // Simulação de Registro/Login Automático
+                await fetch(`${DB_URL}/users/${u}.json`, { method: 'PUT', body: JSON.stringify(userData) });
+                state.user = userData;
+                localStorage.setItem('g1_session', JSON.stringify(userData));
+                app.navigate('home');
+            },
+            async updateRole(id, role) {
+                await fetch(`${DB_URL}/users/${id}/role.json`, { method: 'PUT', body: JSON.stringify(role) });
+                app.loadData().then(() => app.navigate('painel-dono'));
             }
         };
 
-        const admin = {
-            async toggleJornalista(id, currentRole) {
-                const newRole = currentRole === 'jornalista' ? 'usuario' : 'jornalista';
-                await api.patch(`/users/${id}`, { role: newRole });
-                router.go('painel');
-            },
-            async saveNews() {
-                const n = {
-                    id: 'n' + Date.now(),
+        const news = {
+            async publish() {
+                const data = {
+                    id: Date.now(),
                     titulo: document.getElementById('n-titulo').value,
                     subtitulo: document.getElementById('n-sub').value,
-                    imagem: document.getElementById('n-img').value,
                     tema: document.getElementById('n-tema').value,
+                    imagem: document.getElementById('n-img').value,
                     conteudo: document.getElementById('n-content').value,
-                    data: new Date().toISOString(),
-                    autorNome: state.user.nome,
-                    autorId: state.user.id
+                    autor: state.user.nome,
+                    data: new Date().toISOString()
                 };
-                await api.patch(`/news/${n.id}`, n);
-                router.go('home');
-            },
-            async deleteNews(id) {
-                if(confirm("Deseja excluir esta notícia?")) {
-                    await api.delete(`/news/${id}`);
-                    router.go('painel');
-                }
+                await fetch(`${DB_URL}/news/${data.id}.json`, { method: 'PUT', body: JSON.stringify(data) });
+                alert("Publicado!");
+                app.loadData().then(() => app.navigate('home'));
             }
         };
 
-        /* --- UTILITÁRIOS UI --- */
         function toggleMenu(force) {
-            const menu = document.getElementById('side-menu');
-            const overlay = document.getElementById('overlay');
-            const ham = document.getElementById('hamburger');
-            const isOpen = typeof force === 'boolean' ? force : !menu.classList.contains('open');
-
-            menu.classList.toggle('open', isOpen);
-            overlay.style.display = isOpen ? 'block' : 'none';
-            ham.classList.toggle('active', isOpen);
+            const m = document.getElementById('side-menu');
+            const o = document.getElementById('overlay');
+            const isOpen = force !== undefined ? force : !m.classList.contains('open');
+            m.classList.toggle('open', isOpen);
+            o.style.display = isOpen ? 'block' : 'none';
         }
 
-        function updateClock() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Maceio' });
-            document.getElementById('live-clock').innerText = timeStr;
-        }
-
-        /* --- INITIALIZATION --- */
-        window.onload = () => {
-            const bar = document.getElementById('load-bar');
-            let progress = 0;
-            
-            const interval = setInterval(() => {
-                progress += Math.random() * 30;
-                bar.style.width = Math.min(progress, 100) + '%';
-                
-                if(progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        document.getElementById('splash-screen').style.opacity = '0';
-                        setTimeout(() => {
-                            document.getElementById('splash-screen').style.display = 'none';
-                            router.go('home');
-                        }, 800);
-                    }, 500);
-                }
-            }, 200);
-
-            setInterval(updateClock, 1000);
-            updateClock();
-        };
+        // Initialize App
+        app.init();
 
     </script>
 </body>
