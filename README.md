@@ -1,0 +1,2 @@
+# g1-brookasil-rp
+ESTE REPOSITÓRIO É TOTALMENTE ROLEPLAY!
