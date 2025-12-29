@@ -4,648 +4,443 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>g1 Brookasil - O portal de notícias de Brookasil</title>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        /* --- DESIGN SYSTEM G1 BROOKASIL --- */
         :root {
             --g1-red: #C4170C;
-            --g1-dark-red: #9B120A;
-            --g1-bg: #fdfdfd;
+            --g1-dark: #111111;
+            --g1-grey: #f6f6f6;
             --g1-text: #333333;
-            --g1-subtitle: #666666;
-            --g1-border: #eeeeee;
-            --g1-link: #00427c;
-            /* Tema Ano Novo */
+            --g1-sub: #666666;
+            --g1-border: #e5e5e5;
             --new-year-gold: #D4AF37;
-            --new-year-accent: #ffffff;
-            --shadow-soft: 0 4px 12px rgba(0,0,0,0.08);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Open Sans', sans-serif; 
-            background-color: var(--g1-bg); 
-            color: var(--g1-text); 
-            line-height: 1.5;
-            overflow-x: hidden;
-        }
+        /* --- RESET & BASE --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Open Sans', sans-serif; background: #fff; color: var(--g1-text); overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; transition: var(--transition); }
+        ul { list-style: none; }
+        button { cursor: pointer; border: none; font-family: inherit; }
 
-        /* --- BACKGROUND ANO NOVO --- */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 20%),
-                        radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.03) 0%, transparent 20%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .container { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
-        .flex { display: flex; align-items: center; }
-        .grid { display: grid; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .hidden { display: none !important; }
 
-        /* --- HEADER PROFISSIONAL --- */
-        header { 
-            background: var(--g1-red); 
-            color: white; 
-            padding: 12px 0; 
-            position: sticky; 
-            top: 0; 
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+        /* --- TOP BAR (CLIMA/HORA) --- */
+        .top-bar { background: #fff; border-bottom: 1px solid var(--g1-border); padding: 8px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--g1-sub); }
+        .top-bar .flex { display: flex; justify-content: space-between; align-items: center; }
+        .live-indicator { display: flex; align-items: center; gap: 5px; color: var(--g1-red); }
+        .live-dot { width: 6px; height: 6px; background: var(--g1-red); border-radius: 50%; animation: pulse 1.5s infinite; }
 
-        .header-main { display: flex; justify-content: space-between; align-items: center; }
+        /* --- HEADER --- */
+        header { background: var(--g1-red); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow); }
+        .header-content { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 30px; }
         
-        .logo-area { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .logo-g1 { font-size: 38px; font-weight: 800; letter-spacing: -3px; color: white; }
-        .logo-brookasil { font-size: 24px; font-weight: 300; letter-spacing: -1px; opacity: 0.9; border-left: 1px solid rgba(255,255,255,0.3); padding-left: 10px; }
+        .logo-group { display: flex; align-items: center; gap: 10px; }
+        .logo-g1 { font-size: 42px; font-weight: 900; color: #fff; letter-spacing: -3px; }
+        .logo-region { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.8); border-left: 1px solid rgba(255,255,255,0.3); padding-left: 12px; margin-left: 5px; }
 
-        .search-bar { 
-            flex: 1; 
-            max-width: 450px; 
-            margin: 0 40px; 
-            position: relative;
-        }
-        .search-bar input { 
-            width: 100%; 
-            padding: 10px 15px; 
-            border: none; 
-            border-radius: 4px; 
-            background: rgba(255,255,255,0.15);
-            color: white;
-            font-size: 14px;
-            transition: var(--transition);
-        }
-        .search-bar input::placeholder { color: rgba(255,255,255,0.7); }
-        .search-bar input:focus { background: white; color: black; outline: none; }
+        .search-wrapper { position: relative; max-width: 500px; width: 100%; }
+        .search-wrapper input { width: 100%; padding: 12px 20px; border-radius: 6px; border: none; background: rgba(0,0,0,0.1); color: #fff; font-size: 14px; outline: none; transition: var(--transition); }
+        .search-wrapper input:focus { background: #fff; color: #000; }
+        .search-wrapper input::placeholder { color: rgba(255,255,255,0.7); }
 
-        .auth-widget { font-weight: 700; font-size: 13px; cursor: pointer; text-transform: uppercase; }
+        .user-nav { display: flex; gap: 20px; align-items: center; color: #fff; font-size: 13px; font-weight: 700; }
+        .user-nav .avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; }
 
-        /* --- CLIMA E HORA (ALAGOAS FEEL) --- */
-        .sub-header { 
-            background: white; 
-            border-bottom: 1px solid var(--g1-border); 
-            padding: 8px 0; 
-            font-size: 12px; 
-            color: var(--g1-subtitle);
-            font-weight: 600;
-        }
-        .live-info { display: flex; justify-content: space-between; align-items: center; }
-        .time-box { color: var(--g1-red); display: flex; gap: 5px; align-items: center; }
-        .time-box span { font-variant-numeric: tabular-nums; }
-        .clima-box { display: flex; align-items: center; gap: 10px; }
-        .new-year-tag { 
-            background: var(--new-year-gold); 
-            color: white; 
-            padding: 2px 8px; 
-            border-radius: 20px; 
-            font-size: 10px;
-            animation: pulse 2s infinite;
-        }
+        /* --- MENU --- */
+        .main-nav { background: #fff; border-bottom: 1px solid var(--g1-border); overflow-x: auto; white-space: nowrap; }
+        .main-nav ul { display: flex; justify-content: center; }
+        .main-nav a { display: block; padding: 18px 20px; font-size: 13px; font-weight: 800; color: var(--g1-red); text-transform: uppercase; border-bottom: 3px solid transparent; }
+        .main-nav a:hover { background: var(--g1-grey); border-bottom-color: var(--g1-red); }
 
-        /* --- MENU DE NAVEGAÇÃO --- */
-        .nav-bar { 
-            background: white; 
-            border-bottom: 1px solid var(--g1-border); 
-            position: sticky; 
-            top: 64px; 
-            z-index: 999;
-            overflow-x: auto;
-        }
-        .nav-bar ul { display: flex; list-style: none; justify-content: center; }
-        .nav-bar a { 
-            display: block; 
-            padding: 15px 20px; 
-            text-decoration: none; 
-            color: var(--g1-red); 
-            font-weight: 700; 
-            font-size: 13px; 
-            text-transform: uppercase;
-            white-space: nowrap;
-            transition: var(--transition);
-        }
-        .nav-bar a:hover { background: #f9f9f9; color: var(--g1-dark-red); }
+        /* --- HOME HERO --- */
+        .hero { margin: 40px 0; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .main-manchete { position: relative; cursor: pointer; overflow: hidden; border-radius: 8px; }
+        .main-manchete img { width: 100%; height: 550px; object-fit: cover; transition: transform 0.8s ease; }
+        .main-manchete:hover img { transform: scale(1.05); }
+        .main-manchete .overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 50px 30px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: #fff; }
+        .main-manchete h1 { font-family: 'Playfair Display', serif; font-size: 48px; line-height: 1; margin-bottom: 15px; }
+        .main-manchete p { font-size: 18px; opacity: 0.9; }
 
-        /* --- MANCHETE PRINCIPAL (ESTILO IMPACTANTE) --- */
-        .main-headline { 
-            margin: 30px 0; 
-            cursor: pointer;
-            display: block;
-        }
-        .main-headline .img-container { 
-            width: 100%; 
-            height: 500px; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            position: relative;
-            box-shadow: var(--shadow-soft);
-        }
-        .main-headline img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
-        .main-headline:hover img { transform: scale(1.03); }
-        .main-headline .content { 
-            padding: 20px 0; 
-        }
-        .main-headline h1 { 
-            font-size: 48px; 
-            color: var(--g1-red); 
-            line-height: 1.1; 
-            letter-spacing: -2px;
-            margin-bottom: 10px;
-        }
-        .main-headline p { font-size: 20px; color: var(--g1-subtitle); font-weight: 400; }
+        /* --- CARDS --- */
+        .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 60px; }
+        .card { background: #fff; transition: var(--transition); border-bottom: 1px solid var(--g1-border); padding-bottom: 20px; }
+        .card:hover { transform: translateY(-5px); opacity: 0.8; }
+        .card img { width: 100%; height: 220px; object-fit: cover; border-radius: 4px; margin-bottom: 15px; }
+        .card .label { color: var(--g1-red); font-weight: 800; font-size: 11px; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .card h3 { font-size: 22px; line-height: 1.2; color: var(--g1-red); font-family: 'Playfair Display', serif; }
+        .card .meta { font-size: 12px; color: var(--g1-sub); margin-top: 10px; }
 
-        /* --- GRID DE NOTÍCIAS --- */
-        .news-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 30px; 
-            margin-bottom: 50px;
-        }
-        .news-card { 
-            cursor: pointer; 
-            border-bottom: 1px solid var(--g1-border); 
-            padding-bottom: 20px;
-            transition: var(--transition);
-        }
-        .news-card:hover { opacity: 0.8; }
-        .news-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 12px; }
-        .news-card .label { color: var(--g1-red); font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
-        .news-card h3 { font-size: 20px; color: var(--g1-red); line-height: 1.2; margin-bottom: 8px; }
-        .news-card .meta { font-size: 12px; color: #999; }
+        /* --- ARTICLE VIEW --- */
+        .article-view { max-width: 800px; margin: 60px auto; }
+        .article-header h1 { font-family: 'Playfair Display', serif; font-size: 56px; line-height: 1.1; margin-bottom: 20px; }
+        .article-header h2 { font-size: 24px; color: var(--g1-sub); font-weight: 400; margin-bottom: 30px; }
+        .article-info { border-top: 1px solid var(--g1-border); padding: 20px 0; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; }
+        .article-body { font-size: 20px; line-height: 1.8; color: #222; }
+        .article-body p { margin-bottom: 30px; }
+        .article-body img { width: 100%; border-radius: 8px; margin: 40px 0; }
 
-        /* --- PÁGINA DA NOTÍCIA --- */
-        .article-page { max-width: 800px; margin: 40px auto; }
-        .article-header h1 { font-size: 42px; line-height: 1.1; margin-bottom: 15px; }
-        .article-header h2 { font-size: 22px; color: var(--g1-subtitle); font-weight: 400; margin-bottom: 20px; }
-        .article-meta { border-top: 1px solid #eee; padding: 15px 0; margin-bottom: 30px; font-size: 14px; color: #777; }
-        .article-content { font-size: 19px; line-height: 1.8; color: #333; }
-        .article-content p { margin-bottom: 25px; }
-        .article-content img { width: 100%; border-radius: 8px; margin: 20px 0; }
+        /* --- AUTH MODAL --- */
+        .auth-container { max-width: 450px; margin: 100px auto; background: #fff; padding: 50px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--g1-border); }
+        .auth-container h2 { font-family: 'Playfair Display', serif; font-size: 32px; text-align: center; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--g1-sub); }
+        .input-group input { width: 100%; padding: 15px; border: 1px solid var(--g1-border); border-radius: 6px; font-size: 16px; transition: var(--transition); }
+        .input-group input:focus { border-color: var(--g1-red); outline: none; }
+        .btn-primary { width: 100%; padding: 18px; background: var(--g1-red); color: #fff; font-weight: 800; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- LOGIN E PERFIL (ESTILO CLEAN) --- */
-        .auth-container { max-width: 400px; margin: 80px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: var(--shadow-soft); border: 1px solid var(--g1-border); }
-        .auth-container h2 { text-align: center; margin-bottom: 30px; color: var(--g1-red); font-size: 28px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
-        .form-group input, .form-group textarea { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid #ddd; 
-            border-radius: 6px; 
-            font-size: 16px;
-        }
-        .btn-g1 { 
-            width: 100%; 
-            padding: 15px; 
-            background: var(--g1-red); 
-            color: white; 
-            border: none; 
-            border-radius: 6px; 
-            font-weight: 700; 
-            font-size: 16px; 
-            cursor: pointer; 
-            transition: var(--transition);
-        }
-        .btn-g1:hover { background: var(--g1-dark-red); transform: translateY(-2px); }
+        /* --- PANEL JORNALISTA --- */
+        .panel-grid { display: grid; grid-template-columns: 300px 1fr; gap: 40px; margin: 40px 0; }
+        .sidebar { background: var(--g1-grey); padding: 30px; border-radius: 8px; }
+        .sidebar-item { padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; font-weight: 700; transition: var(--transition); }
+        .sidebar-item:hover { color: var(--g1-red); padding-left: 20px; }
 
-        /* --- PANEL / DASHBOARD --- */
-        .admin-panel { background: #f4f4f4; padding: 20px; border-radius: 8px; margin-top: 20px; }
-        .admin-item { 
-            background: white; 
-            padding: 15px; 
-            margin-bottom: 10px; 
-            border-radius: 4px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-left: 4px solid var(--g1-red);
-        }
+        /* --- ANIMATIONS --- */
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- FOOTER --- */
-        footer { background: #f0f0f0; padding: 60px 0; margin-top: 100px; border-top: 1px solid #ddd; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
-        .footer-col h4 { color: var(--g1-red); margin-bottom: 20px; text-transform: uppercase; }
-        .footer-col ul { list-style: none; }
-        .footer-col ul li { margin-bottom: 10px; font-size: 14px; }
-        .footer-col a { color: var(--g1-subtitle); text-decoration: none; }
-
-        /* --- ANIMAÇÕES --- */
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-        }
+        footer { background: var(--g1-grey); padding: 80px 0; border-top: 1px solid var(--g1-border); margin-top: 100px; }
+        .footer-content { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; }
+        .footer-logo { font-size: 32px; font-weight: 900; color: var(--g1-red); margin-bottom: 20px; }
 
         /* --- RESPONSIVIDADE --- */
-        @media (max-width: 768px) {
-            .main-headline h1 { font-size: 32px; }
-            .header-main { flex-wrap: wrap; }
-            .search-bar { order: 3; max-width: 100%; margin: 15px 0 0 0; }
-            .logo-brookasil { font-size: 18px; }
+        @media (max-width: 992px) {
+            .hero { grid-template-columns: 1fr; }
+            .news-grid { grid-template-columns: repeat(2, 1fr); }
+            .header-content { grid-template-columns: auto 1fr; }
+            .search-wrapper { display: none; }
+        }
+        @media (max-width: 600px) {
+            .news-grid { grid-template-columns: 1fr; }
+            .article-header h1 { font-size: 36px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sub-header">
-        <div class="container live-info">
-            <div class="clima-box">
-                <span class="new-year-tag">ANO NOVO 2026</span>
-                <span>Região Metropolitana</span>
-                <span id="clima-temp">29°C ☀️</span>
+    <div class="top-bar">
+        <div class="container flex">
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                AO VIVO: BROOKASIL — <span id="current-time">00:00:00</span>
             </div>
-            <div class="time-box">
-                <span id="relogio-live">00:00:00</span>
-            </div>
+            <div>PLANTÃO DE ANO NOVO 2026 🥂</div>
+            <div id="weather">28°C ENSOLARADO</div>
         </div>
     </div>
 
     <header>
-        <div class="container header-main">
-            <div class="logo-area" onclick="router.navigate('home')">
+        <div class="container header-content">
+            <div class="logo-group" onclick="router.go('home')">
                 <div class="logo-g1">g1</div>
-                <div class="logo-brookasil">brookasil</div>
+                <div class="logo-region">brookasil</div>
             </div>
 
-            <div class="search-bar">
-                <input type="text" id="inputBusca" placeholder="BUSCAR NO G1 BROOKASIL" onkeyup="handleSearch(event)">
+            <div class="search-wrapper">
+                <input type="text" id="main-search" placeholder="O que você está procurando?" onkeyup="app.search(event)">
             </div>
 
-            <div class="auth-widget" id="authWidget" onclick="router.navigate('perfil')">
-                Conta g1
-            </div>
+            <nav class="user-nav" id="user-area">
+                <a href="#" onclick="router.go('login')">ASSINE JÁ</a>
+                <a href="#" onclick="router.go('login')">MINHA CONTA</a>
+            </nav>
         </div>
     </header>
 
-    <nav class="nav-bar">
-        <div class="container">
-            <ul>
-                <li><a href="#" onclick="router.navigate('home')">Home</a></li>
-                <li><a href="#" onclick="router.navigate('politica')">Política</a></li>
-                <li><a href="#" onclick="router.navigate('filiacao')">Filiação</a></li>
-                <li><a href="#" onclick="router.navigate('candidatura')">Candidatura</a></li>
-                <li><a href="#" onclick="router.navigate('divulgacao')">Divulgação</a></li>
-                <li><a href="#" onclick="router.navigate('ajuda')">Ajuda</a></li>
-            </ul>
-        </div>
+    <nav class="main-nav">
+        <ul>
+            <li><a href="#" onclick="router.go('home')">Home</a></li>
+            <li><a href="#" onclick="router.go('cat', 'politica')">Política</a></li>
+            <li><a href="#" onclick="router.go('cat', 'esporte')">Esporte</a></li>
+            <li><a href="#" onclick="router.go('filiacao')">Filiação</a></li>
+            <li><a href="#" onclick="router.go('candidatura')">Candidatura</a></li>
+            <li><a href="#" onclick="router.go('divulgacao')">Trabalho</a></li>
+            <li><a href="#" onclick="router.go('ajuda')">Ajuda</a></li>
+        </ul>
     </nav>
 
-    <main id="view-port" class="container">
+    <main id="app-root" class="container fade-in">
         </main>
 
     <footer>
-        <div class="container footer-grid">
-            <div class="footer-col">
-                <h4>g1 Brookasil</h4>
+        <div class="container footer-content">
+            <div>
+                <div class="footer-logo">g1</div>
+                <p>O portal de notícias de Brookasil. Informação com credibilidade 24 horas por dia.</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom:20px">EDITORIAS</h4>
                 <ul>
-                    <li><a href="#">Sobre o portal</a></li>
-                    <li><a href="#">Trabalhe conosco</a></li>
-                    <li><a href="#">Princípios editoriais</a></li>
+                    <li><a href="#">Política</a></li>
+                    <li><a href="#">Economia</a></li>
+                    <li><a href="#">Educação</a></li>
                 </ul>
             </div>
-            <div class="footer-col">
-                <h4>Categorias</h4>
+            <div>
+                <h4 style="margin-bottom:20px">SERVIÇOS</h4>
                 <ul>
-                    <li><a href="#" onclick="router.navigate('politica')">Política</a></li>
-                    <li><a href="#" onclick="router.navigate('esporte')">Esporte</a></li>
-                    <li><a href="#" onclick="router.navigate('policia')">Polícia</a></li>
+                    <li><a href="#">Filiação Partidária</a></li>
+                    <li><a href="#">CDE Candidatura</a></li>
+                    <li><a href="#">Divulgação</a></li>
                 </ul>
             </div>
-            <div class="footer-col">
-                <h4>Serviços</h4>
+            <div>
+                <h4 style="margin-bottom:20px">AJUDA</h4>
                 <ul>
-                    <li><a href="#" onclick="router.navigate('filiacao')">Filiação Partidária</a></li>
-                    <li><a href="#" onclick="router.navigate('candidatura')">Candidatura CDE</a></li>
+                    <li><a href="#">Tutorial</a></li>
+                    <li><a href="#">Fale Conosco</a></li>
                 </ul>
             </div>
-        </div>
-        <div class="container" style="margin-top: 40px; opacity: 0.5; font-size: 12px; text-align: center;">
-            &copy; 2025-2026 g1 Brookasil Notícias S.A. - O portal de notícias de todos.
         </div>
     </footer>
 
     <script>
-        /* --- CONFIGURAÇÕES DE DADOS (DATABASE EM MEMÓRIA/LOCALSTORAGE) --- */
+        /* --- CORE CONFIGURATION --- */
         const DB_URL = "https://g1-brookasil-default-rtdb.firebaseio.com";
         
-        // Dados Iniciais (Exemplo de reaproveitamento)
-        let noticias = [
-            {
-                id: 1,
-                titulo: "Brookasil inicia preparativos para o grande Réveillon da Esperança",
-                subtitulo: "Expectativa é de público recorde na orla; segurança será reforçada em toda a região.",
-                tema: "CURIOSIDADES",
-                imagem: "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?auto=format&fit=crop&w=1200",
-                conteudo: "O governo local anunciou hoje os detalhes para a festa de Ano Novo. Com queima de fogos silenciosa e diversas atrações locais, o evento promete marcar a história de Brookasil...",
-                autor: "Redação g1",
-                data: "2025-12-31T20:00:00",
-                destaque: true
+        const state = {
+            user: JSON.parse(localStorage.getItem('g1_session')) || null,
+            news: [],
+            ads: []
+        };
+
+        /* --- API ENGINE --- */
+        const API = {
+            async get(path) {
+                const r = await fetch(`${DB_URL}${path}.json`);
+                return await r.json();
             },
-            {
-                id: 2,
-                titulo: "Novas regras para Candidatura CDE entram em vigor amanhã",
-                subtitulo: "Interessados devem ficar atentos aos novos prazos de filiação partidária.",
-                tema: "POLÍTICA",
-                imagem: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=600",
-                conteudo: "As mudanças visam dar mais transparência ao processo eleitoral de Brookasil. Segundo o tribunal competente...",
-                autor: "Carlos Silva",
-                data: "2025-12-30T10:00:00",
-                destaque: false
-            }
-        ];
-
-        // Estado do Usuário
-        let currentUser = JSON.parse(localStorage.getItem('user')) || null;
-        let divulgações = JSON.parse(localStorage.getItem('ads')) || [];
-
-        /* --- ENGINE DE ROTEAMENTO --- */
-        const router = {
-            navigate: (view, param = null) => {
-                const viewport = document.getElementById('view-port');
-                viewport.innerHTML = ''; // Limpa view
-                window.scrollTo(0,0);
-
-                switch(view) {
-                    case 'home': renderHome(); break;
-                    case 'noticia': renderNoticia(param); break;
-                    case 'perfil': renderPerfil(); break;
-                    case 'login': renderLogin(); break;
-                    case 'politica': renderCategoria('POLÍTICA'); break;
-                    case 'ajuda': renderAjuda(); break;
-                    case 'filiacao': renderFiliacao(); break;
-                    case 'candidatura': renderCandidatura(); break;
-                    case 'divulgacao': renderDivulgacao(); break;
-                    default: renderHome();
-                }
-                updateAuthWidget();
+            async post(path, data) {
+                return await fetch(`${DB_URL}${path}.json`, { method: 'POST', body: JSON.stringify(data) });
+            },
+            async put(path, data) {
+                return await fetch(`${DB_URL}${path}.json`, { method: 'PUT', body: JSON.stringify(data) });
             }
         };
 
-        /* --- RELÓGIO AO VIVO (ALAGOAS) --- */
-        function updateClock() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Maceio' });
-            document.getElementById('relogio-live').innerText = timeStr;
-        }
-        setInterval(updateClock, 1000);
+        /* --- ROUTER ENGINE --- */
+        const router = {
+            go(view, param = null) {
+                window.scrollTo({top: 0, behavior: 'smooth'});
+                const root = document.getElementById('app-root');
+                root.innerHTML = '<div style="padding:100px; text-align:center">Carregando conteúdo g1...</div>';
+                
+                setTimeout(() => {
+                    root.classList.remove('fade-in');
+                    void root.offsetWidth; // Trigger reflow
+                    root.classList.add('fade-in');
 
-        /* --- VIEW: HOME --- */
-        function renderHome() {
-            const viewport = document.getElementById('view-port');
-            const destaque = noticias.find(n => n.destaque) || noticias[0];
-            const outras = noticias.filter(n => n.id !== destaque.id);
+                    if(view === 'home') renderHome(root);
+                    else if(view === 'article') renderArticle(root, param);
+                    else if(view === 'login') renderLogin(root);
+                    else if(view === 'perfil') renderPerfil(root);
+                    else if(view === 'ajuda') renderAjuda(root);
+                    else if(view === 'filiacao') renderStatic(root, 'filiacao');
+                    else if(view === 'candidatura') renderStatic(root, 'candidatura');
+                    else if(view === 'divulgacao') renderDivulgacao(root);
+                    
+                    this.updateUI();
+                }, 300);
+            },
+            updateUI() {
+                const area = document.getElementById('user-area');
+                if(state.user) {
+                    area.innerHTML = `
+                        <span style="color:#fff">Olá, ${state.user.nome.split(' ')[0]}</span>
+                        <img src="${state.user.foto || 'https://i.pravatar.cc/100'}" class="avatar" onclick="router.go('perfil')">
+                    `;
+                }
+            }
+        };
 
-            let html = `
-                <div class="main-headline" onclick="router.navigate('noticia', ${destaque.id})">
-                    <div class="img-container">
-                        <img src="${destaque.imagem}">
+        /* --- VIEW RENDERERS --- */
+        function renderHome(el) {
+            const principal = state.news[0] || { titulo: "Carregando...", subtitulo: "Aguarde", imagem: "" };
+            const secundarias = state.news.slice(1, 7);
+
+            el.innerHTML = `
+                <section class="hero">
+                    <div class="main-manchete" onclick="router.go('article', '${principal.id}')">
+                        <img src="${principal.imagem}">
+                        <div class="overlay">
+                            <span class="label" style="color:var(--new-year-gold)">DESTAQUE</span>
+                            <h1>${principal.titulo}</h1>
+                            <p>${principal.subtitulo}</p>
+                        </div>
                     </div>
-                    <div class="content">
-                        <h1>${destaque.titulo}</h1>
-                        <p>${destaque.subtitulo}</p>
+                    <div class="sidebar-news">
+                        <h2 style="margin-bottom:20px; border-bottom: 2px solid var(--g1-red); display:inline-block">MAIS LIDAS</h2>
+                        ${state.news.slice(0, 4).map((n, i) => `
+                            <div style="margin-bottom:20px; cursor:pointer" onclick="router.go('article', '${n.id}')">
+                                <span style="font-size:32px; font-weight:900; color:var(--g1-border); float:left; margin-right:15px">${i+1}</span>
+                                <p style="font-weight:700; font-size:14px">${n.titulo}</p>
+                            </div>
+                        `).join('')}
                     </div>
-                </div>
+                </section>
                 <div class="news-grid">
-                    ${outras.map(n => `
-                        <div class="news-card" onclick="router.navigate('noticia', ${n.id})">
+                    ${secundarias.map(n => `
+                        <div class="card" onclick="router.go('article', '${n.id}')">
                             <img src="${n.imagem}">
-                            <div class="label">${n.tema}</div>
+                            <span class="label">${n.tema}</span>
                             <h3>${n.titulo}</h3>
-                            <div class="meta">Há 2 horas • Por ${n.autor}</div>
+                            <div class="meta">Por ${n.autor} • Há 1 hora</div>
                         </div>
                     `).join('')}
                 </div>
             `;
-            viewport.innerHTML = html;
         }
 
-        /* --- VIEW: NOTÍCIA INDIVIDUAL --- */
-        function renderNoticia(id) {
-            const n = noticias.find(x => x.id == id);
-            const viewport = document.getElementById('view-port');
-            viewport.innerHTML = `
-                <div class="article-page">
+        function renderArticle(el, id) {
+            const n = state.news.find(x => x.id === id);
+            if(!n) return router.go('home');
+
+            el.innerHTML = `
+                <article class="article-view">
                     <div class="article-header">
-                        <div class="label" style="color:var(--g1-red); font-weight:800; margin-bottom:10px;">${n.tema}</div>
+                        <span class="label" style="color:var(--g1-red); font-size:14px; margin-bottom:10px; display:block">${n.tema}</span>
                         <h1>${n.titulo}</h1>
                         <h2>${n.subtitulo}</h2>
                     </div>
-                    <div class="article-meta">
-                        Por <strong>${n.autor}</strong>, g1 Brookasil — Brookasil<br>
-                        ${new Date(n.data).toLocaleDateString('pt-BR')} ${new Date(n.data).toLocaleTimeString('pt-BR').slice(0,5)}
+                    <div class="article-info">
+                        <div>Por <strong>${n.autor}</strong>, g1 Brookasil<br><small>${new Date(n.data).toLocaleString()}</small></div>
+                        <div class="flex" style="gap:10px">
+                            <button style="background:#1877f2; color:#fff; padding:8px 15px; border-radius:4px">Facebook</button>
+                            <button style="background:#1da1f2; color:#fff; padding:8px 15px; border-radius:4px">Twitter</button>
+                        </div>
                     </div>
-                    <div class="article-content">
+                    <div class="article-body">
                         <img src="${n.imagem}">
                         <p>${n.conteudo}</p>
-                        <p>O g1 segue acompanhando todos os desdobramentos desta notícia em tempo real.</p>
                     </div>
-                </div>
+                </article>
             `;
         }
 
-        /* --- VIEW: AJUDA (TUTORIAL) --- */
-        function renderAjuda() {
-            document.getElementById('view-port').innerHTML = `
-                <div class="article-page">
-                    <h1>Central de Ajuda g1</h1>
-                    <div class="article-content" style="margin-top:30px;">
-                        <h3>1. Criar uma conta</h3>
-                        <p>Clique em "CONTA G1" no topo do site. Você só precisa de um Nome e um @usuário. Não pedimos e-mail nem telefone por privacidade.</p>
-                        
-                        <h3>2. Navegação</h3>
-                        <p>Use o menu superior para filtrar por categorias como Política ou Divulgação. Clicando no logo "g1 Brookasil", você volta para a página inicial.</p>
-                        
-                        <h3>3. Divulgação de Trabalho</h3>
-                        <p>Para anunciar uma vaga ou serviço, você precisa estar logado. Acesse a aba "Divulgação", preencha o formulário e aguarde a aprovação do Dono do site.</p>
-                        
-                        <h3>4. Painéis Especiais</h3>
-                        <p>Jornalistas podem criar notícias. O Dono do site pode gerenciar tudo. Esses painéis aparecem automaticamente na sua página de Perfil se você tiver a permissão.</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        /* --- SISTEMA DE LOGIN (SEM GMAIL/TELEFONE) --- */
-        function renderLogin() {
-            document.getElementById('view-port').innerHTML = `
+        function renderLogin(el) {
+            el.innerHTML = `
                 <div class="auth-container">
-                    <h2>Entrar no g1</h2>
-                    <div class="form-group">
-                        <label>Seu Nome</label>
-                        <input type="text" id="login-nome" placeholder="Ex: João Silva">
-                    </div>
-                    <div class="form-group">
+                    <h2>Minha Conta</h2>
+                    <div class="input-group">
                         <label>@usuário</label>
-                        <input type="text" id="login-user" placeholder="Ex: joao_2026">
+                        <input type="text" id="login-user" placeholder="Digite seu usuário">
                     </div>
-                    <button class="btn-g1" onclick="handleAuth()">ACESSAR CONTA</button>
-                    <p style="font-size:11px; margin-top:15px; text-align:center; color:#999;">
-                        Ao entrar, você concorda com os termos de uso de Brookasil.
+                    <div class="input-group">
+                        <label>Senha</label>
+                        <input type="password" id="login-pass" placeholder="Digite sua senha">
+                    </div>
+                    <button class="btn-primary" onclick="app.auth.login()">Entrar</button>
+                    <p style="text-align:center; margin-top:20px; font-size:13px">
+                        Não tem conta? <a href="#" style="color:var(--g1-red)" onclick="renderRegister(document.getElementById('app-root'))">Cadastre-se agora</a>
                     </p>
                 </div>
             `;
         }
 
-        function handleAuth() {
-            const nome = document.getElementById('login-nome').value;
-            const user = document.getElementById('login-user').value;
-
-            if(!nome || !user) return alert("Preencha todos os campos!");
-
-            // Lógica de cargos baseada no @username (Simulação simples)
-            let role = 'user';
-            if(user.toLowerCase() === '@admin' || user.toLowerCase() === 'admin') role = 'dono';
-            if(user.toLowerCase().includes('jornalista')) role = 'jornalista';
-
-            currentUser = { nome, user, role, bio: "Membro do g1 Brookasil", foto: "https://www.w3schools.com/howto/img_avatar.png" };
-            localStorage.setItem('user', JSON.stringify(currentUser));
-            router.navigate('home');
+        function renderRegister(el) {
+            el.innerHTML = `
+                <div class="auth-container">
+                    <h2>Cadastre-se</h2>
+                    <div class="input-group"><label>Nome Completo</label><input type="text" id="reg-nome"></div>
+                    <div class="input-group"><label>@usuário</label><input type="text" id="reg-user"></div>
+                    <div class="input-group"><label>Senha</label><input type="password" id="reg-pass"></div>
+                    <button class="btn-primary" onclick="app.auth.register()">Criar Conta</button>
+                </div>
+            `;
         }
 
-        function renderPerfil() {
-            if(!currentUser) return renderLogin();
-
-            document.getElementById('view-port').innerHTML = `
-                <div class="article-page">
-                    <div class="flex" style="gap:20px; align-items: flex-start; margin-bottom:40px;">
-                        <img src="${currentUser.foto}" style="width:100px; height:100px; border-radius:50%;">
-                        <div>
-                            <h1>${currentUser.nome}</h1>
-                            <p style="color:var(--g1-red); font-weight:700;">@${currentUser.user}</p>
-                            <p>${currentUser.bio}</p>
-                            <span class="new-year-tag" style="margin-top:10px; display:inline-block;">Membro ${currentUser.role}</span>
-                        </div>
-                    </div>
+        /* --- APP LOGIC --- */
+        const app = {
+            async init() {
+                const data = await API.get('/news');
+                state.news = data ? Object.values(data).reverse() : [];
+                router.go('home');
+                this.updateTime();
+                setInterval(this.updateTime, 1000);
+            },
+            updateTime() {
+                const now = new Date();
+                document.getElementById('current-time').innerText = now.toLocaleTimeString('pt-BR', {timeZone: 'America/Maceio'});
+            },
+            auth: {
+                async login() {
+                    const u = document.getElementById('login-user').value;
+                    const p = document.getElementById('login-pass').value;
                     
-                    <div class="admin-panel">
-                        <h3>Configurações</h3>
-                        <button class="btn-g1" style="background:#666; width:auto; margin-top:10px;" onclick="logout()">Sair da Conta</button>
-                    </div>
-
-                    ${currentUser.role === 'dono' ? renderPainelDono() : ''}
-                    ${currentUser.role === 'jornalista' ? renderPainelJornalista() : ''}
-                </div>
-            `;
-        }
-
-        function renderPainelDono() {
-            return `
-                <div class="admin-panel" style="margin-top:40px; border: 2px solid var(--new-year-gold);">
-                    <h2 style="color:var(--new-year-gold)">👑 Painel Administrativo</h2>
-                    <p>Gerencie usuários, aprove divulgações e edite notícias do portal.</p>
-                    <div style="margin-top:20px;">
-                        <div class="admin-item">
-                            <span>Solicitações de Divulgação (${divulgações.filter(d => !d.aprovada).length})</span>
-                            <button onclick="router.navigate('divulgacao')">Ver todos</button>
-                        </div>
-                        <div class="admin-item">
-                            <span>Gerenciar Jornalistas</span>
-                            <button>Gerenciar</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderPainelJornalista() {
-            return `
-                <div class="admin-panel" style="margin-top:40px;">
-                    <h2>📰 Painel de Redação</h2>
-                    <button class="btn-g1" onclick="renderEditorNews()">+ Nova Notícia</button>
-                </div>
-            `;
-        }
-
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('user');
-            router.navigate('home');
-        }
-
-        function updateAuthWidget() {
-            const widget = document.getElementById('authWidget');
-            if(currentUser) {
-                widget.innerText = currentUser.nome.split(' ')[0];
-            } else {
-                widget.innerText = "Conta g1";
+                    if(u === 'admin' && p === 'Brookasil1234') {
+                        state.user = { nome: "Dono do Site", user: "admin", role: "dono" };
+                        localStorage.setItem('g1_session', JSON.stringify(state.user));
+                        router.go('home');
+                    } else {
+                        // Simulação de login
+                        state.user = { nome: u, user: u, role: "usuario" };
+                        localStorage.setItem('g1_session', JSON.stringify(state.user));
+                        router.go('home');
+                    }
+                },
+                register() {
+                    const nome = document.getElementById('reg-nome').value;
+                    state.user = { nome, user: "novo_user", role: "usuario" };
+                    localStorage.setItem('g1_session', JSON.stringify(state.user));
+                    router.go('home');
+                }
+            },
+            search(e) {
+                if(e.key === 'Enter') {
+                    const q = e.target.value.toLowerCase();
+                    const filtered = state.news.filter(n => n.titulo.toLowerCase().includes(q));
+                    // Render filtered results...
+                    alert(`Encontramos ${filtered.length} resultados.`);
+                }
             }
-        }
-
-        /* --- FUNCIONALIDADES EXTRAS --- */
-        function renderFiliacao() {
-            document.getElementById('view-port').innerHTML = `
-                <div class="article-page">
-                    <h1>Filiação Partidária</h1>
-                    <div class="article-content">
-                        <p>A filiação partidária é o vínculo formal estabelecido entre o cidadão e o partido político. É o primeiro passo para quem deseja influenciar os rumos de Brookasil.</p>
-                        <img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=800">
-                        <button class="btn-g1" onclick="window.open('https://tsedoroblox2025.github.io/filia-o.html/', '_blank')">IR PARA SITE DE FILIAÇÃO</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderCandidatura() {
-            document.getElementById('view-port').innerHTML = `
-                <div class="article-page">
-                    <h1>Candidatura (CDE)</h1>
-                    <div class="article-content">
-                        <p>O processo de candidatura para a Cidade Eleitoral (CDE) exige transparência e comprometimento com o bem-estar de todos os moradores de Brookasil.</p>
-                        <button class="btn-g1" onclick="window.open('https://tsedoroblox2025.github.io/candidatura-cde/', '_blank')">IR PARA SITE DE CANDIDATURA</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function handleSearch(e) {
-            const termo = e.target.value.toLowerCase();
-            if(e.key === 'Enter') {
-                const resultados = noticias.filter(n => 
-                    n.titulo.toLowerCase().includes(termo) || 
-                    n.tema.toLowerCase().includes(termo)
-                );
-                // Lógica de exibição de busca...
-                alert("Busca realizada para: " + termo);
-            }
-        }
-
-        function renderDivulgacao() {
-            if(!currentUser) {
-                alert("Você precisa estar logado para divulgar!");
-                return renderLogin();
-            }
-            document.getElementById('view-port').innerHTML = `
-                <div class="auth-container" style="max-width: 600px;">
-                    <h2>Divulgação de Trabalho</h2>
-                    <p style="margin-bottom:20px; font-size:14px; color:var(--g1-subtitle);">Anuncie sua vaga ou serviço no g1 Brookasil.</p>
-                    <div class="form-group">
-                        <label>Título do Anúncio</label>
-                        <input type="text" id="ad-title" placeholder="Ex: Vaga para Recepcionista">
-                    </div>
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <textarea id="ad-desc" rows="4"></textarea>
-                    </div>
-                    <button class="btn-g1" onclick="submitAd()">ENVIAR PARA ANÁLISE</button>
-                    <p style="font-size:12px; margin-top:10px; color:var(--g1-red);">* Sua divulgação passará por análise antes de ser publicada.</p>
-                </div>
-            `;
-        }
-
-        function submitAd() {
-            alert("Sua divulgação foi enviada com sucesso e está em análise pelo Dono!");
-            router.navigate('home');
-        }
-
-        /* --- INICIALIZAÇÃO --- */
-        window.onload = () => {
-            router.navigate('home');
-            updateClock();
         };
+
+        // Static Page Content Helpers
+        function renderAjuda(el) {
+            el.innerHTML = `
+                <div class="article-view">
+                    <h1>Central de Ajuda</h1>
+                    <div class="article-body">
+                        <h3>Como criar sua conta?</h3>
+                        <p>Basta clicar em "Minha Conta" no topo, escolher um nome de usuário e uma senha segura. Não solicitamos e-mail nem telefone para sua total privacidade em Brookasil.</p>
+                        <h3>Como publicar uma divulgação?</h3>
+                        <p>Logado em sua conta, acesse a aba "Trabalho" e preencha o formulário. O Dono do site analisará seu pedido em até 24h.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStatic(el, type) {
+            const title = type === 'filiacao' ? 'Filiação Partidária' : 'Candidatura CDE';
+            const url = type === 'filiacao' ? 'https://tsedoroblox2025.github.io/filia-o.html/' : 'https://tsedoroblox2025.github.io/candidatura-cde/';
+            el.innerHTML = `
+                <div class="article-view" style="text-align:center">
+                    <h1>${title}</h1>
+                    <p style="margin:30px 0; font-size:18px">Acesse o portal oficial do governo para concluir seu processo em Brookasil.</p>
+                    <a href="${url}" target="_blank" class="btn-primary" style="display:inline-block; width:auto; padding: 20px 40px">Ir para o Site Oficial</a>
+                </div>
+            `;
+        }
+
+        function renderDivulgacao(el) {
+            if(!state.user) return renderLogin(el);
+            el.innerHTML = `
+                <div class="auth-container" style="max-width:700px">
+                    <h2>Solicitar Divulgação</h2>
+                    <div class="input-group"><label>Título do Trabalho</label><input type="text" id="adv-title"></div>
+                    <div class="input-group"><label>Descrição Detalhada</label><textarea id="adv-desc" style="width:100%; height:150px; border:1px solid #ddd; padding:15px"></textarea></div>
+                    <button class="btn-primary" onclick="alert('Solicitação enviada para o Dono!')">Enviar para Análise</button>
+                </div>
+            `;
+        }
+
+        // Iniciar App
+        app.init();
 
     </script>
 </body>
