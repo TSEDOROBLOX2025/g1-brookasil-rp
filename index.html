@@ -3,822 +3,917 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>g1 Brookasil | Onde a notícia acontece</title>
+    <title>g1 Brookasil - O portal de notícias</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;500;700&family=Inter:wght@300;400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
+        /* --- RESET & VARIAVEIS --- */
         :root {
-            /* Cores G1 e Twitter */
-            --primary: #c4170c; /* G1 Red */
-            --secondary: #1d9bf0; /* Twitter Blue */
-            --dark: #121212;
-            --light: #ffffff;
-            --gray: #eff3f4;
-            --text-main: #0f1419;
-            --text-sec: #536471;
-            --border: #eff3f4;
-            --shadow: rgba(0, 0, 0, 0.05);
-            --success: #00ba7c;
-            --danger: #f4212e;
+            --g1-red: #c4170c;
+            --g1-dark-red: #a6120a;
+            --g1-gray: #333333;
+            --g1-light-gray: #f7f7f7;
+            --g1-border: #e6e6e6;
+            --g1-text: #222222;
+            --g1-meta: #666666;
+            --twitter-blue: #1d9bf0;
+            --twitter-like: #f91880;
+            --twitter-retweet: #00ba7c;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #fff; color: var(--text-main); overflow-x: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body {
+            font-family: 'Arimo', sans-serif;
+            background-color: #fff;
+            color: var(--g1-text);
+            overflow-x: hidden;
+        }
         a { text-decoration: none; color: inherit; cursor: pointer; }
         ul { list-style: none; }
-        button { cursor: pointer; border: none; background: none; transition: 0.2s; }
-        input, textarea, select { outline: none; border: 1px solid #ccc; border-radius: 4px; padding: 10px; width: 100%; transition: 0.2s; }
-        input:focus, textarea:focus { border-color: var(--secondary); }
+        button { cursor: pointer; border: none; background: none; font-family: inherit; }
 
-        /* Layout Grid */
-        .app-container {
-            display: grid;
-            grid-template-columns: 275px 1fr 350px;
-            max-width: 1300px;
-            margin: 0 auto;
-            min-height: 100vh;
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--g1-red); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
         }
+        .splash-logo { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 4rem; color: #fff; letter-spacing: -2px; }
+        .splash-loader {
+            width: 200px; height: 4px; background: rgba(255,255,255,0.3); margin-top: 20px; border-radius: 2px; overflow: hidden;
+        }
+        .splash-bar {
+            width: 0%; height: 100%; background: #fff; transition: width 0.2s;
+        }
+        .splash-text { color: #fff; margin-top: 10px; font-size: 0.9rem; }
 
-        /* Sidebar Esquerda (Menu) */
-        .sidebar { padding: 20px; position: sticky; top: 0; height: 100vh; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .logo { font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 30px; letter-spacing: -1px; }
-        .nav-item { 
-            font-size: 1.2rem; padding: 15px; border-radius: 30px; display: flex; align-items: center; gap: 15px; color: var(--text-main); font-weight: 600;
-        }
-        .nav-item:hover { background-color: rgba(15, 20, 25, 0.1); }
-        .nav-item.active { font-weight: 800; color: var(--primary); }
-        .nav-btn-action {
-            background-color: var(--primary); color: white; width: 100%; padding: 15px; 
-            border-radius: 30px; font-weight: 700; font-size: 1.1rem; margin-top: 20px; box-shadow: 0 4px 10px rgba(196, 23, 12, 0.3);
-        }
-        .nav-btn-action:hover { background-color: #a61209; }
-
-        /* Feed Central */
-        .main-feed { border-right: 1px solid var(--border); }
-        .header-top {
-            position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 100;
-            border-bottom: 1px solid var(--border); padding: 10px 20px;
-        }
-        .filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .filter-tag {
-            padding: 8px 16px; background: var(--gray); border-radius: 20px; font-size: 0.9rem; font-weight: 600; white-space: nowrap;
-        }
-        .filter-tag:hover, .filter-tag.active { background: var(--text-main); color: white; }
-
-        /* Cards de Notícia */
-        .news-card {
-            padding: 20px; border-bottom: 1px solid var(--border); transition: 0.2s; cursor: pointer;
-        }
-        .news-card:hover { background-color: #f7f9f9; }
-        .news-meta { display: flex; gap: 10px; font-size: 0.9rem; color: var(--text-sec); margin-bottom: 5px; align-items: center; }
-        .news-author-img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
-        .news-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 5px; line-height: 1.3; color: #000; }
-        .news-subtitle { font-size: 1rem; color: var(--text-sec); margin-bottom: 10px; }
-        .news-category { color: var(--primary); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; }
-        .news-actions { display: flex; justify-content: space-between; max-width: 400px; margin-top: 15px; color: var(--text-sec); }
-        .action-btn { display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .action-btn:hover.red { color: var(--danger); }
-        .action-btn:hover.blue { color: var(--secondary); }
-        .action-btn:hover.green { color: var(--success); }
-        .liked { color: var(--danger); }
-        .reposted { color: var(--success); }
-
-        /* Sidebar Direita (Widgets) */
-        .widgets { padding: 20px; position: sticky; top: 0; }
-        .search-box {
-            background: var(--gray); padding: 12px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
-        }
-        .search-box input { border: none; background: transparent; padding: 0; width: 100%; font-weight: 500; }
-        .search-box:focus-within { background: white; border: 1px solid var(--secondary); box-shadow: 0 0 5px rgba(29, 155, 240, 0.2); }
+        /* --- HEADER --- */
+        header { background: var(--g1-red); height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 5%; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .menu-btn { color: #fff; font-size: 1.5rem; }
+        .logo-g1 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 2rem; color: #fff; letter-spacing: -2px; line-height: 1; }
+        .logo-suffix { font-weight: 300; font-size: 1.2rem; margin-left: 2px; opacity: 0.9; }
         
-        .widget-box { background: var(--gray); border-radius: 16px; padding: 15px; margin-bottom: 20px; }
-        .widget-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 15px; }
-
-        /* Telas de Login / Admin */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
-        }
-        .modal-content {
-            background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;
-        }
-        .form-group { margin-bottom: 15px; }
-        .form-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-        .btn-primary {
-            width: 100%; padding: 12px; background: var(--text-main); color: white; border-radius: 30px; font-weight: 700; margin-top: 10px;
-        }
-        .btn-primary:hover { background-color: var(--primary); }
+        .header-search { flex: 1; max-width: 600px; margin: 0 20px; position: relative; display: none; }
+        @media(min-width: 768px) { .header-search { display: block; } }
+        .search-input { width: 100%; padding: 8px 15px; border-radius: 4px; border: none; background: rgba(255,255,255,0.2); color: #fff; transition: 0.3s; }
+        .search-input::placeholder { color: rgba(255,255,255,0.7); }
+        .search-input:focus { background: #fff; color: #333; }
         
-        .btn-danger { background-color: var(--danger); color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem;}
+        .header-right { display: flex; align-items: center; gap: 15px; color: #fff; font-size: 0.8rem; }
+        .user-avatar-mini { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #fff; cursor: pointer; }
+        .weather-widget { text-align: right; display: none; }
+        @media(min-width: 768px) { .weather-widget { display: block; } }
 
-        /* Loader */
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* --- MENU LATERAL --- */
+        #sidebar {
+            position: fixed; top: 0; left: -300px; width: 280px; height: 100%;
+            background: #fff; z-index: 1001; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+        }
+        #sidebar.open { left: 0; }
+        .sidebar-header { height: 56px; background: var(--g1-red); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; color: #fff; }
+        .sidebar-menu { overflow-y: auto; flex: 1; padding: 10px 0; }
+        .sidebar-item { padding: 12px 20px; font-weight: 700; color: var(--g1-g1-red); font-size: 0.95rem; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        .sidebar-item:hover { background: #f9f9f9; color: var(--g1-red); }
+        .sidebar-item i { width: 20px; text-align: center; color: #999; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
 
-        /* Responsive */
-        @media (max-width: 1000px) {
-            .app-container { grid-template-columns: 80px 1fr; }
-            .widgets { display: none; }
-            .nav-text { display: none; }
-            .logo { font-size: 1.5rem; text-align: center; }
+        /* --- LAYOUT PRINCIPAL --- */
+        main { max-width: 1200px; margin: 20px auto; padding: 0 15px; min-height: 80vh; }
+        
+        /* Grid de Notícias */
+        .feed-grid { display: grid; gap: 30px; grid-template-columns: 1fr; }
+        @media(min-width: 768px) { .feed-grid { grid-template-columns: repeat(3, 1fr); } }
+        
+        /* Card G1 Style */
+        .card { display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .card:hover .card-title { color: var(--g1-red); }
+        .card-img-wrapper { width: 100%; aspect-ratio: 16/9; overflow: hidden; border-radius: 4px; background: #eee; position: relative; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .card:hover .card-img { transform: scale(1.05); }
+        .card-theme { color: var(--g1-red); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; }
+        .card-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.4rem; line-height: 1.2; color: #333; }
+        .card-subtitle { font-size: 1rem; color: #666; line-height: 1.4; }
+        .card-meta { font-size: 0.75rem; color: #888; display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+
+        /* Destaque Principal (Hero) */
+        .hero-card { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 30px; }
+        @media(min-width: 768px) { 
+            .hero-card { grid-template-columns: 1.5fr 1fr; } 
+            .hero-content { order: 1; } .hero-image { order: 2; }
         }
-        @media (max-width: 600px) {
-            .app-container { display: block; }
-            .sidebar { 
-                position: fixed; bottom: 0; top: auto; width: 100%; height: 60px; 
-                flex-direction: row; justify-content: space-around; padding: 10px; background: white; border-top: 1px solid var(--border);
-                z-index: 200;
-            }
-            .logo, .nav-btn-action { display: none; }
-            .main-feed { padding-bottom: 70px; }
-            .nav-item { padding: 10px; }
-            .filter-tag { font-size: 0.8rem; padding: 6px 12px; }
-        }
+        .hero-title { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; color: var(--g1-red); line-height: 1.1; margin-bottom: 10px; }
+        .hero-subtitle { font-size: 1.2rem; color: #444; }
+
+        /* --- PÁGINA DE NOTÍCIA (DETALHE) --- */
+        #article-view { display: none; animation: fadeIn 0.3s; }
+        .article-header { margin-bottom: 30px; text-align: center; max-width: 800px; margin: 0 auto 30px; }
+        .article-h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.1; margin-bottom: 15px; color: #111; }
+        .article-h2 { font-size: 1.3rem; font-weight: 400; color: #555; line-height: 1.4; }
+        .article-meta-bar { border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin: 20px auto; max-width: 800px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #666; }
+        .article-body { max-width: 800px; margin: 0 auto; font-size: 1.2rem; line-height: 1.8; color: #222; }
+        .article-body p { margin-bottom: 20px; }
+        .article-body img { max-width: 100%; height: auto; border-radius: 4px; margin: 20px 0; }
+
+        /* --- INTERAÇÕES SOCIAIS --- */
+        .social-bar { display: flex; gap: 20px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
+        .social-btn { display: flex; align-items: center; gap: 8px; font-size: 1rem; color: #555; padding: 8px 16px; border-radius: 20px; transition: 0.2s; }
+        .social-btn:hover { background: rgba(0,0,0,0.05); }
+        .social-btn.liked { color: var(--twitter-like); }
+        .social-btn.reposted { color: var(--twitter-retweet); }
+        
+        /* Comentários */
+        .comments-section { max-width: 800px; margin: 40px auto; background: #f9f9f9; padding: 20px; border-radius: 8px; }
+        .comment-input-area { display: flex; gap: 10px; margin-bottom: 20px; }
+        .comment-box { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 60px; }
+        .btn-comment { background: var(--twitter-blue); color: #fff; padding: 0 20px; border-radius: 20px; font-weight: 700; }
+        .comment-list { display: flex; flex-direction: column; gap: 15px; }
+        .comment-item { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; display: flex; gap: 10px; }
+        .comment-content { flex: 1; }
+        .comment-header { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; }
+        .comment-author { font-weight: 700; }
+        .comment-date { color: #999; }
+
+        /* --- AUTH & FORMS --- */
+        .auth-container { max-width: 400px; margin: 50px auto; padding: 30px; border: 1px solid #ddd; border-radius: 8px; text-align: center; }
+        .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-primary { width: 100%; padding: 12px; background: var(--g1-red); color: #fff; font-weight: 700; border-radius: 4px; }
+        .btn-secondary { background: #666; margin-top: 10px; }
+
+        /* --- PAINEL (Admin/Jornalista) --- */
+        #admin-panel { display: none; background: #fff; padding: 20px; }
+        .admin-toolbar { background: #f0f0f0; padding: 15px; margin-bottom: 20px; border-radius: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .editor-container input, .editor-container textarea, .editor-container select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; display: block; }
+
+        /* --- UTILS --- */
+        .hidden { display: none !important; }
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: #fff; font-weight: bold; margin-left: 5px; }
+        .badge-owner { background: #000; }
+        .badge-journ { background: var(--twitter-blue); }
+        .feed-alert { text-align: center; padding: 40px; color: #666; width: 100%; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div id="auth-screen" style="display: flex; height: 100vh; align-items: center; justify-content: center; flex-direction: column; padding: 20px;">
-    <h1 style="color: var(--primary); font-size: 3rem; margin-bottom: 20px;">g1 <span style="color: var(--text-main)">brookasil</span></h1>
-    <div class="widget-box" style="width: 100%; max-width: 400px; background: white; border: 1px solid var(--border);">
-        <h2 style="margin-bottom: 20px;">Entrar</h2>
-        <input type="text" id="login-user" placeholder="@usuario ou Dono" class="form-group">
-        <input type="password" id="login-pass" placeholder="Senha" class="form-group" style="margin-bottom: 15px;">
-        <button class="btn-primary" onclick="app.auth.login()">Entrar</button>
-        <p style="margin-top: 15px; text-align: center; font-size: 0.9rem;">
-            Não tem conta? <a href="#" onclick="app.ui.toggleAuthMode()" style="color: var(--secondary)">Cadastre-se</a>
-        </p>
+    <div id="splash-screen">
+        <div class="splash-logo">g1 <span style="font-weight:300">brookasil</span></div>
+        <div class="splash-loader"><div class="splash-bar" id="splash-bar"></div></div>
+        <p class="splash-text">Carregando notícias...</p>
     </div>
-    <div id="register-box" class="widget-box" style="width: 100%; max-width: 400px; background: white; border: 1px solid var(--border); display: none;">
-        <h2 style="margin-bottom: 20px;">Criar Conta</h2>
-        <input type="text" id="reg-name" placeholder="Nome Completo" class="form-group">
-        <input type="text" id="reg-user" placeholder="@usuario (sem espaços)" class="form-group">
-        <input type="password" id="reg-pass" placeholder="Senha" class="form-group">
-        <textarea id="reg-bio" placeholder="Biografia curta" class="form-group"></textarea>
-        <button class="btn-primary" onclick="app.auth.register()">Criar Conta</button>
-        <p style="margin-top: 15px; text-align: center; font-size: 0.9rem;">
-            Já tem conta? <a href="#" onclick="app.ui.toggleAuthMode()" style="color: var(--secondary)">Entrar</a>
-        </p>
-    </div>
-</div>
 
-<div id="app-screen" class="app-container" style="display: none;">
-    <aside class="sidebar">
-        <div class="logo">g1 <span style="color: var(--text-main); font-weight: 300;">brookasil</span></div>
-        <nav>
-            <a onclick="app.router.go('home')" class="nav-item active" id="nav-home"><i class="fas fa-home"></i> <span class="nav-text">Início</span></a>
-            <a onclick="app.router.go('explore')" class="nav-item" id="nav-explore"><i class="fas fa-hashtag"></i> <span class="nav-text">Explorar</span></a>
-            <a onclick="app.router.go('profile')" class="nav-item" id="nav-profile"><i class="fas fa-user"></i> <span class="nav-text">Perfil</span></a>
-            <a onclick="app.router.go('divulgacao')" class="nav-item" id="nav-divulga"><i class="fas fa-bullhorn"></i> <span class="nav-text">Divulgar</span></a>
-            <a onclick="app.router.go('admin')" class="nav-item" id="nav-admin" style="display:none"><i class="fas fa-lock"></i> <span class="nav-text">Painel Dono</span></a>
-            <a onclick="app.auth.logout()" class="nav-item"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Sair</span></a>
-        </nav>
-        <button class="nav-btn-action" onclick="app.ui.openPostModal()">Notícia</button>
+    <div id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <span>MENU</span>
+            <button onclick="toggleMenu()" style="color:white;"><i class="fas fa-times"></i></button>
+        </div>
+        <ul class="sidebar-menu" id="menu-list">
+            </ul>
     </aside>
 
-    <main class="main-feed">
-        <div class="header-top">
-            <h2 id="page-title" style="margin-bottom: 10px;">Início</h2>
-            <div class="filters" id="category-filters">
-                <button onclick="app.news.filter('all')" class="filter-tag active">Todas</button>
-                <button onclick="app.news.filter('Política')" class="filter-tag">Política</button>
-                <button onclick="app.news.filter('Polícia')" class="filter-tag">Polícia</button>
-                <button onclick="app.news.filter('Educação')" class="filter-tag">Educação</button>
-                <button onclick="app.news.filter('Esporte')" class="filter-tag">Esporte</button>
-                <button onclick="app.news.filter('Entretenimento')" class="filter-tag">Entretenimento</button>
+    <header>
+        <div class="header-left">
+            <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+            <div class="logo-g1" onclick="router('home')" style="cursor:pointer;">
+                g1<span class="logo-suffix">brookasil</span>
             </div>
         </div>
         
-        <div id="feed-loader" class="loader"></div>
-        <div id="content-area">
+        <div class="header-search">
+            <input type="text" class="search-input" placeholder="Buscar no g1..." id="search-box" onkeyup="handleSearch(event)">
+        </div>
+
+        <div class="header-right">
+            <div class="weather-widget">
+                <span id="clock-display">--:--</span> | <span style="color:#ffcc00"><i class="fas fa-sun"></i> 29°C</span>
+                <div style="font-size: 0.7rem; opacity: 0.8;">Maceió, AL</div>
             </div>
-    </main>
-
-    <aside class="widgets">
-        <div class="search-box">
-            <i class="fas fa-search" style="color: var(--text-sec)"></i>
-            <input type="text" placeholder="Buscar no Brookasil" onkeyup="app.news.search(this.value)">
+            <img id="header-avatar" src="https://via.placeholder.com/32" class="user-avatar-mini" onclick="handleProfileClick()">
         </div>
-        <div class="widget-box">
-            <h3 class="widget-title">O que está acontecendo</h3>
-            <p style="font-size: 0.9rem; color: var(--text-sec)">Notícias em tempo real com a credibilidade g1 e a velocidade do Twitter.</p>
-        </div>
-    </aside>
-</div>
+    </header>
 
-<div id="post-modal" class="modal">
-    <div class="modal-content">
-        <h2>Nova Notícia</h2>
-        <input type="hidden" id="post-id">
-        <div class="form-group"><label class="form-label">Título</label><input id="post-title"></div>
-        <div class="form-group"><label class="form-label">Subtítulo</label><input id="post-subtitle"></div>
-        <div class="form-group"><label class="form-label">Categoria</label>
-            <select id="post-category">
-                <option>Política</option><option>Polícia</option><option>Educação</option>
-                <option>Esporte</option><option>Entretenimento</option><option>Curiosidades</option>
-            </select>
-        </div>
-        <div class="form-group"><label class="form-label">Conteúdo</label><textarea id="post-content" rows="6"></textarea></div>
-        <button class="btn-primary" onclick="app.news.save()">Publicar</button>
-        <button class="btn-primary" onclick="app.ui.closeModals()" style="background: #ccc; color: #333; margin-top: 5px;">Cancelar</button>
-    </div>
-</div>
+    <main id="app-container">
+        </main>
 
-<div id="divulga-modal" class="modal">
-    <div class="modal-content">
-        <h2>Solicitar Divulgação</h2>
-        <div class="form-group"><input id="div-title" placeholder="Título da Divulgação"></div>
-        <div class="form-group"><textarea id="div-desc" placeholder="Descrição detalhada"></textarea></div>
-        <div class="form-group">
-            <select id="div-cat"><option>Evento</option><option>Serviço</option><option>Comércio</option></select>
-        </div>
-        <button class="btn-primary" onclick="app.divulga.submit()">Enviar Pedido</button>
-        <button class="btn-primary" onclick="app.ui.closeModals()" style="background: #ccc; color: #333; margin-top: 5px;">Cancelar</button>
-    </div>
-</div>
+    <script>
+        // --- CONFIGURAÇÃO FIREBASE ---
+        const firebaseConfig = {
+            databaseURL: "https://g1-brookasil-default-rtdb.firebaseio.com",
+            // A chave API é usada para autenticação interna do SDK, mas para RTDB público/regras simples, a URL basta.
+            // Para cumprir o prompt, vamos apenas inicializar.
+        };
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getDatabase, ref, set, get, push, update, remove, child, query, orderByChild, equalTo } 
-    from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
 
-    const firebaseConfig = {
-        databaseURL: "https://g1-brookasil-default-rtdb.firebaseio.com",
-    };
+        // --- ESTADO GLOBAL ---
+        const state = {
+            currentUser: null, // { uid, username, role, avatar, name }
+            view: 'home',
+            news: [],
+            users: {},
+            loading: true
+        };
 
-    const appInstance = initializeApp(firebaseConfig);
-    const db = getDatabase(appInstance);
-
-    // ==========================================
-    // APLICAÇÃO GERAL (Namespace 'app')
-    // ==========================================
-    window.app = {
-        user: null, // Objeto do usuário logado
+        // --- UTILITÁRIOS ---
+        const $ = (s) => document.querySelector(s);
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const escapeHtml = (text) => {
+            if (!text) return "";
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        };
+        const getAlagoasTime = () => {
+            return new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Maceio' });
+        };
         
-        // --- 1. AUTENTICAÇÃO ---
-        auth: {
-            async login() {
-                const user = document.getElementById('login-user').value.trim();
-                const pass = document.getElementById('login-pass').value.trim();
-                
-                if(!user || !pass) return alert("Preencha tudo");
+        // --- INICIALIZAÇÃO ---
+        window.onload = async () => {
+            simulateLoading();
+            startClock();
+            loadSession();
+            await fetchInitialData();
+        };
 
-                // Lógica Especial do Dono
-                if (pass === 'Brookasil1234') {
-                    // Login de Super Admin
-                    const adminData = {
-                        username: 'Dono',
-                        name: 'Dono do Brookasil',
-                        role: 'admin',
-                        uid: 'admin_master_id',
-                        avatar: 'https://ui-avatars.com/api/?name=Dono&background=c4170c&color=fff'
-                    };
-                    // Verifica se existe, senão cria
-                    const snapshot = await get(child(ref(db), `users/${adminData.uid}`));
-                    if (!snapshot.exists()) {
-                        await set(ref(db, 'users/' + adminData.uid), adminData);
-                    }
-                    this.setSession(adminData);
-                    return;
+        function simulateLoading() {
+            let width = 0;
+            const bar = $('#splash-bar');
+            const interval = setInterval(() => {
+                width += Math.random() * 10;
+                if(width >= 100) {
+                    width = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        $('#splash-screen').style.opacity = '0';
+                        setTimeout(() => $('#splash-screen').style.display = 'none', 500);
+                        router('home');
+                    }, 500);
                 }
+                bar.style.width = width + '%';
+            }, 100);
+        }
 
-                // Login Normal
-                // Como Firebase Realtime não tem "Login" nativo sem Auth, buscamos o usuário pelo username
-                // Nota: Em produção usaria Firebase Auth. Aqui usamos uma query manual.
-                const usersRef = query(ref(db, 'users'), orderByChild('username'), equalTo(user));
-                const snapshot = await get(usersRef);
+        function startClock() {
+            setInterval(() => {
+                $('#clock-display').innerText = getAlagoasTime();
+            }, 1000);
+        }
 
-                if (snapshot.exists()) {
-                    const userData = Object.values(snapshot.val())[0];
-                    if (userData.password === pass) {
-                        this.setSession(userData);
-                    } else {
-                        alert("Senha incorreta");
-                    }
-                } else {
-                    alert("Usuário não encontrado");
-                }
-            },
+        // --- FIREBASE DATA ---
+        async function fetchInitialData() {
+            // Listen to News
+            db.ref('news').on('value', (snapshot) => {
+                const data = snapshot.val();
+                state.news = data ? Object.values(data) : [];
+                if(state.view === 'home') renderHome();
+            });
 
-            async register() {
-                const name = document.getElementById('reg-name').value;
-                const user = document.getElementById('reg-user').value.replace(/\s/g, '').toLowerCase();
-                const pass = document.getElementById('reg-pass').value;
-                const bio = document.getElementById('reg-bio').value;
+            // Listen to Users (Simples cache para performance)
+            db.ref('users').on('value', (snapshot) => {
+                state.users = snapshot.val() || {};
+            });
+        }
 
-                if (!name || !user || !pass) return alert("Preencha os campos obrigatórios");
+        // --- SISTEMA DE ROTEAMENTO ---
+        function router(view, params = null) {
+            state.view = view;
+            const container = $('#app-container');
+            container.innerHTML = ''; // Limpa tela
+            toggleMenu(false); // Fecha menu se aberto
 
-                // Verificar duplicidade
-                const usersRef = query(ref(db, 'users'), orderByChild('username'), equalTo(user));
-                const snapshot = await get(usersRef);
-
-                if (snapshot.exists()) return alert("Usuário já existe! Escolha outro.");
-
-                const newUserRef = push(ref(db, 'users'));
-                const uid = newUserRef.key;
-                const newUser = {
-                    uid: uid,
-                    name, username: user, password: pass, bio,
-                    role: 'user', // Default
-                    avatar: `https://ui-avatars.com/api/?name=${name}&background=random`
-                };
-
-                await set(newUserRef, newUser);
-                alert("Conta criada! Faça login.");
-                app.ui.toggleAuthMode();
-            },
-
-            setSession(userData) {
-                app.user = userData;
-                localStorage.setItem('brookasil_user', JSON.stringify(userData));
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-screen').style.display = 'grid';
-                app.init();
-            },
-
-            logout() {
-                localStorage.removeItem('brookasil_user');
-                location.reload();
-            },
-
-            check() {
-                const stored = localStorage.getItem('brookasil_user');
-                if (stored) {
-                    app.user = JSON.parse(stored);
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('app-screen').style.display = 'grid';
-                    app.init();
-                }
+            switch(view) {
+                case 'home':
+                    renderHome(params); // params pode ser filtro de categoria
+                    break;
+                case 'article':
+                    renderArticle(params); // params é o ID da notícia
+                    break;
+                case 'login':
+                    renderLogin();
+                    break;
+                case 'register':
+                    renderRegister();
+                    break;
+                case 'profile':
+                    renderProfile();
+                    break;
+                case 'editor':
+                    renderEditor(params); // params pode ser ID para editar
+                    break;
+                case 'search':
+                    renderSearch(params); // params é o termo
+                    break;
+                case 'divulgacao':
+                    renderDivulgacao();
+                    break;
+                default:
+                    renderHome();
             }
-        },
+            updateHeaderState();
+        }
 
-        // --- 2. ROTEAMENTO ---
-        router: {
-            go(route) {
-                // Atualiza UI da navbar
-                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                const navEl = document.getElementById('nav-' + route);
-                if(navEl) navEl.classList.add('active');
+        // --- COMPONENTES UI ---
 
-                const content = document.getElementById('content-area');
-                const title = document.getElementById('page-title');
-
-                if (route === 'home') {
-                    title.innerText = 'Início';
-                    document.getElementById('category-filters').style.display = 'flex';
-                    app.news.render();
-                } else if (route === 'explore') {
-                    title.innerText = 'Explorar';
-                    content.innerHTML = '<div style="padding:20px; text-align:center">Utilize a barra de pesquisa para encontrar notícias.</div>';
-                } else if (route === 'profile') {
-                    title.innerText = 'Meu Perfil';
-                    document.getElementById('category-filters').style.display = 'none';
-                    app.ui.renderProfile(app.user);
-                } else if (route === 'admin') {
-                    if (app.user.role !== 'admin') return alert("Acesso Negado");
-                    title.innerText = 'Painel do Dono';
-                    document.getElementById('category-filters').style.display = 'none';
-                    app.admin.render();
-                } else if (route === 'divulgacao') {
-                    title.innerText = 'Divulgações';
-                    document.getElementById('category-filters').style.display = 'none';
-                    app.divulga.render();
-                }
+        function updateHeaderState() {
+            const avatar = $('#header-avatar');
+            if (state.currentUser) {
+                avatar.src = state.currentUser.avatar || 'https://via.placeholder.com/32';
+                avatar.style.border = '2px solid white';
+            } else {
+                avatar.src = 'https://via.placeholder.com/32?text=?';
             }
-        },
+        }
 
-        // --- 3. NOTÍCIAS ---
-        news: {
-            currentFilter: 'all',
+        function toggleMenu(forceClose) {
+            const sidebar = $('#sidebar');
+            const overlay = $('#overlay');
+            if (forceClose === false || sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                overlay.style.display = 'none';
+            } else {
+                renderMenuLinks();
+                sidebar.classList.add('open');
+                overlay.style.display = 'block';
+            }
+        }
+
+        function renderMenuLinks() {
+            const list = $('#menu-list');
+            list.innerHTML = '';
             
-            async render() {
-                const loader = document.getElementById('feed-loader');
-                const content = document.getElementById('content-area');
-                loader.style.display = 'block';
-                content.innerHTML = '';
+            const categories = [
+                {name: 'Home', icon: 'fa-home', action: () => router('home')},
+                {name: 'Destaques', icon: 'fa-star', action: () => router('home', 'Destaque')},
+                {name: 'Política', icon: 'fa-landmark', action: () => router('home', 'Política')},
+                {name: 'Polícia', icon: 'fa-gavel', action: () => router('home', 'Polícia')},
+                {name: 'Educação', icon: 'fa-graduation-cap', action: () => router('home', 'Educação')},
+                {name: 'Esporte', icon: 'fa-futbol', action: () => router('home', 'Esporte')},
+                {name: 'Entretenimento', icon: 'fa-film', action: () => router('home', 'Entretenimento')},
+                {name: 'Divulgação de Trabalho', icon: 'fa-briefcase', action: () => router('divulgacao')},
+            ];
 
-                try {
-                    const snapshot = await get(ref(db, 'news'));
-                    if (!snapshot.exists()) {
-                        content.innerHTML = '<p style="padding:20px">Nenhuma notícia ainda.</p>';
-                        loader.style.display = 'none';
-                        return;
-                    }
-
-                    let newsArr = [];
-                    snapshot.forEach(child => {
-                        newsArr.push({ id: child.key, ...child.val() });
-                    });
-
-                    // Ordenar por data (recente primeiro)
-                    newsArr.sort((a, b) => b.timestamp - a.timestamp);
-
-                    // Filtro
-                    if (this.currentFilter !== 'all') {
-                        newsArr = newsArr.filter(n => n.category === this.currentFilter);
-                    }
-
-                    // Renderizar
-                    for (const news of newsArr) {
-                        content.innerHTML += await app.ui.createNewsCard(news);
-                    }
-                } catch (e) {
-                    console.error(e);
-                } finally {
-                    loader.style.display = 'none';
+            // Itens de Usuário
+            if (state.currentUser) {
+                categories.push({name: 'Minha Conta', icon: 'fa-user', action: () => router('profile')});
+                if (state.currentUser.role === 'owner' || state.currentUser.role === 'journalist') {
+                    categories.push({name: 'Escrever Notícia', icon: 'fa-pen', action: () => router('editor')});
                 }
-            },
-
-            filter(category) {
-                this.currentFilter = category;
-                document.querySelectorAll('.filter-tag').forEach(b => b.classList.remove('active'));
-                event.target.classList.add('active');
-                this.render();
-            },
-
-            async save() {
-                const title = document.getElementById('post-title').value;
-                const subtitle = document.getElementById('post-subtitle').value;
-                const category = document.getElementById('post-category').value;
-                const content = document.getElementById('post-content').value;
-                const id = document.getElementById('post-id').value; // Se tiver ID é edição
-
-                if (!title || !content) return alert("Título e Conteúdo obrigatórios");
-
-                const newsData = {
-                    title, subtitle, category, content,
-                    author: app.user.name,
-                    authorId: app.user.uid,
-                    authorUser: app.user.username,
-                    timestamp: Date.now(),
-                    likes: 0
-                };
-
-                if (id) {
-                    // Edição (Dono ou próprio autor)
-                    await update(ref(db, 'news/' + id), newsData);
-                } else {
-                    // Criação
-                    await push(ref(db, 'news'), newsData);
-                }
-
-                app.ui.closeModals();
-                app.news.render();
-            },
-
-            async delete(id) {
-                if(!confirm("Tem certeza que deseja apagar?")) return;
-                await remove(ref(db, 'news/' + id));
-                // Apagar interações relacionadas (opcional para limpar DB)
-                app.news.render();
-            },
-
-            async search(term) {
-                if (term.length < 3) return;
-                // Busca simples client-side pois Firebase puro tem busca limitada
-                const content = document.getElementById('content-area');
-                content.innerHTML = '<div class="loader" style="display:block"></div>';
-                
-                const snapshot = await get(ref(db, 'news'));
-                let results = [];
-                snapshot.forEach(c => {
-                    const n = c.val();
-                    if (n.title.toLowerCase().includes(term.toLowerCase()) || 
-                        n.content.toLowerCase().includes(term.toLowerCase())) {
-                        results.push({id: c.key, ...n});
-                    }
-                });
-
-                content.innerHTML = '';
-                if(results.length === 0) content.innerHTML = '<p style="padding:20px">Nada encontrado.</p>';
-                for (const news of results) {
-                    content.innerHTML += await app.ui.createNewsCard(news);
-                }
+                categories.push({name: 'Sair', icon: 'fa-sign-out-alt', action: logout});
+            } else {
+                categories.push({name: 'Entrar / Cadastrar', icon: 'fa-user-circle', action: () => router('login')});
             }
-        },
 
-        // --- 4. INTERAÇÕES ---
-        interactions: {
-            async toggleLike(newsId) {
-                // Verificar se já curtiu
-                const likeRef = ref(db, `likes/${newsId}/${app.user.uid}`);
-                const snapshot = await get(likeRef);
-                const newsRef = ref(db, `news/${newsId}`);
-                
-                // Pega contagem atual
-                const nSnap = await get(newsRef);
-                let currentCount = nSnap.val().likes || 0;
+            categories.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'sidebar-item';
+                li.innerHTML = `<i class="fas ${item.icon}"></i> ${item.name}`;
+                li.onclick = item.action;
+                list.appendChild(li);
+            });
+        }
 
-                if (snapshot.exists()) {
-                    // Descurtir
-                    await remove(likeRef);
-                    await update(newsRef, { likes: currentCount - 1 });
-                } else {
-                    // Curtir
-                    await set(likeRef, true);
-                    await update(newsRef, { likes: currentCount + 1 });
-                }
-                
-                // Atualizar UI pontualmente
-                const btn = document.getElementById(`like-btn-${newsId}`);
-                const count = document.getElementById(`like-count-${newsId}`);
-                if (snapshot.exists()) {
-                    btn.classList.remove('liked');
-                    btn.innerHTML = '<i class="far fa-heart"></i>';
-                    count.innerText = currentCount - 1;
-                } else {
-                    btn.classList.add('liked');
-                    btn.innerHTML = '<i class="fas fa-heart"></i>';
-                    count.innerText = currentCount + 1;
-                }
-            },
+        // --- RENDERIZADORES ---
 
-            async repost(newsId) {
-                const repostRef = ref(db, `reposts/${app.user.uid}/${newsId}`);
-                await set(repostRef, { timestamp: Date.now() });
-                alert("Republicado no seu perfil!");
-            },
+        function renderHome(categoryFilter = null) {
+            const container = $('#app-container');
+            let content = '';
+
+            // Filtrar e Ordenar (Mais recente primeiro)
+            let posts = state.news.sort((a,b) => new Date(b.date) - new Date(a.date));
+            if (categoryFilter) {
+                posts = posts.filter(p => p.theme === categoryFilter || (categoryFilter === 'Destaque' && p.isHighlight));
+                content += `<h2 style="color:var(--g1-red); margin: 20px 0;">${categoryFilter}</h2>`;
+            }
+
+            if (posts.length === 0) {
+                container.innerHTML = `<div class="feed-alert">Nenhuma notícia encontrada nesta seção.</div>`;
+                return;
+            }
+
+            content += `<div class="feed-grid">`;
             
-            async copyLink(newsId) {
-                // Simulação de link
-                const url = window.location.origin + "/#news=" + newsId;
-                navigator.clipboard.writeText(url);
-                alert("Link copiado!");
-            }
-        },
-
-        // --- 5. ADMIN / DONO ---
-        admin: {
-            async render() {
-                const content = document.getElementById('content-area');
-                content.innerHTML = `
-                    <div style="padding: 20px;">
-                        <h3 style="margin-bottom: 20px;">Gerenciamento Global</h3>
-                        <div class="filter-tag active" style="margin-bottom:20px; display:inline-block">Jornalistas e Notícias</div>
-                        <div id="admin-news-list"></div>
-                        <h3 style="margin: 20px 0;">Divulgações Pendentes</h3>
-                        <div id="admin-divulga-list"></div>
+            // Logic para Destaque Principal (Primeiro item se for Home)
+            posts.forEach((post, index) => {
+                const isHero = index === 0 && !categoryFilter;
+                const cssClass = isHero ? 'hero-card' : 'card';
+                
+                content += `
+                <div class="${cssClass}" onclick="router('article', '${post.id}')">
+                    <div class="card-img-wrapper ${isHero ? 'hero-image' : ''}">
+                        <img src="${post.image}" class="card-img" onerror="this.src='https://via.placeholder.com/800x450?text=Sem+Imagem'">
                     </div>
+                    <div class="${isHero ? 'hero-content' : ''}">
+                        <div class="card-theme">${post.theme}</div>
+                        <h2 class="${isHero ? 'hero-title' : 'card-title'}">${post.title}</h2>
+                        <p class="${isHero ? 'hero-subtitle' : 'card-subtitle'}">${post.subtitle}</p>
+                        <div class="card-meta">
+                            <span>${getTimeAgo(post.date)}</span>
+                            ${post.authorName ? `<span>Por ${post.authorName}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
                 `;
+            });
+            content += `</div>`;
+            container.innerHTML = content;
+        }
 
-                // Carregar todas as notícias para edição/exclusão
-                const snapNews = await get(ref(db, 'news'));
-                const list = document.getElementById('admin-news-list');
-                
-                if(snapNews.exists()) {
-                    snapNews.forEach(c => {
-                        const n = c.val();
+        function renderArticle(newsId) {
+            const post = state.news.find(n => n.id === newsId);
+            if (!post) return router('home');
+
+            const container = $('#app-container');
+            
+            // Layout da Notícia
+            container.innerHTML = `
+                <div id="article-view">
+                    <div class="article-header">
+                        <h1 class="article-h1">${post.title}</h1>
+                        <h2 class="article-h2">${post.subtitle}</h2>
+                        <div class="article-meta-bar">
+                            <div>
+                                <strong>Por ${post.authorName || 'Redação'}</strong>, g1 Brookasil<br>
+                                ${new Date(post.date).toLocaleDateString()} às ${new Date(post.date).toLocaleTimeString()}
+                            </div>
+                            <div class="share-btns">
+                                <button onclick="shareLink()"><i class="fas fa-link"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="article-body">
+                        <img src="${post.image}" style="width:100%">
+                        ${formatArticleBody(post.content)}
+                    </div>
+
+                    <div class="social-bar">
+                        <button class="social-btn" id="btn-like" onclick="handleInteraction('${post.id}', 'like')">
+                            <i class="far fa-heart"></i> <span id="like-count">0</span>
+                        </button>
+                        <button class="social-btn" id="btn-repost" onclick="handleInteraction('${post.id}', 'repost')">
+                            <i class="fas fa-retweet"></i> Republicar
+                        </button>
+                    </div>
+
+                    <div class="comments-section">
+                        <h3>Comentários</h3>
+                        ${state.currentUser ? `
+                        <div class="comment-input-area">
+                            <img src="${state.currentUser.avatar}" class="user-avatar-mini">
+                            <textarea id="comment-text" class="comment-box" placeholder="Escreva um comentário estilo Twitter..."></textarea>
+                            <button class="btn-comment" onclick="submitComment('${post.id}')">Tweetar</button>
+                        </div>` : `<p><a onclick="router('login')" style="color:blue">Faça login</a> para comentar.</p>`}
+                        
+                        <div id="comments-list" class="comment-list">
+                            </div>
+                    </div>
+                </div>
+            `;
+
+            loadInteractions(post.id);
+        }
+
+        // --- SISTEMA DE INTERAÇÕES ---
+
+        function loadInteractions(newsId) {
+            // Carregar Likes
+            db.ref(`likes/${newsId}`).on('value', snap => {
+                const likes = snap.val() || {};
+                const count = Object.keys(likes).length;
+                const btn = $('#btn-like');
+                if(btn) {
+                    $('#like-count').innerText = count;
+                    if(state.currentUser && likes[state.currentUser.uid]) {
+                        btn.classList.add('liked');
+                        btn.innerHTML = `<i class="fas fa-heart"></i> <span id="like-count">${count}</span>`;
+                    } else {
+                        btn.classList.remove('liked');
+                        btn.innerHTML = `<i class="far fa-heart"></i> <span id="like-count">${count}</span>`;
+                    }
+                }
+            });
+
+            // Carregar Comentários
+            db.ref(`comments/${newsId}`).on('value', snap => {
+                const list = $('#comments-list');
+                if(!list) return;
+                list.innerHTML = '';
+                const comments = snap.val();
+                if(comments) {
+                    Object.values(comments).forEach(c => {
+                        const canDelete = state.currentUser && (state.currentUser.role === 'owner' || state.currentUser.uid === c.userId);
                         list.innerHTML += `
-                            <div style="padding: 10px; border: 1px solid #eee; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <b>${n.title}</b><br>
-                                    <small>Por: ${n.author}</small>
-                                </div>
-                                <div>
-                                    <button onclick="app.ui.openPostModal('${c.key}')" class="btn-danger" style="background:#ddd; color:#333"><i class="fas fa-pen"></i></button>
-                                    <button onclick="app.news.delete('${c.key}')" class="btn-danger"><i class="fas fa-trash"></i></button>
+                            <div class="comment-item">
+                                <img src="${c.userAvatar}" class="user-avatar-mini">
+                                <div class="comment-content">
+                                    <div class="comment-header">
+                                        <div><span class="comment-author">@${c.username}</span> • <span class="comment-date">${getTimeAgo(c.date)}</span></div>
+                                        ${canDelete ? `<button onclick="deleteComment('${newsId}', '${c.id}')" style="color:red; font-size:0.8rem;"><i class="fas fa-trash"></i></button>` : ''}
+                                    </div>
+                                    <div>${escapeHtml(c.text)}</div>
                                 </div>
                             </div>
                         `;
                     });
                 }
+            });
+        }
 
-                // Carregar Divulgações Pendentes
-                const snapDiv = await get(query(ref(db, 'divulgacoes'), orderByChild('status'), equalTo('pendente')));
-                const divList = document.getElementById('admin-divulga-list');
-                if(!snapDiv.exists()) divList.innerHTML = '<p>Nenhuma pendente.</p>';
-                
-                snapDiv.forEach(c => {
-                    const d = c.val();
-                    divList.innerHTML += `
-                        <div style="padding: 10px; background: #fff3cd; border-radius: 8px; margin-bottom: 10px;">
-                            <h4>${d.title}</h4>
-                            <p>${d.desc}</p>
-                            <small>Solicitado por: ${d.username}</small>
-                            <div style="margin-top:10px;">
-                                <button onclick="app.divulga.approve('${c.key}', true)" style="color:green; font-weight:bold; margin-right:10px">APROVAR</button>
-                                <button onclick="app.divulga.approve('${c.key}', false)" style="color:red; font-weight:bold">REPROVAR</button>
+        function handleInteraction(newsId, type) {
+            if(!state.currentUser) return router('login');
+            
+            if(type === 'like') {
+                const ref = db.ref(`likes/${newsId}/${state.currentUser.uid}`);
+                ref.once('value', snap => {
+                    if(snap.exists()) ref.remove(); // Descurtir
+                    else ref.set(true); // Curtir
+                });
+            } else if (type === 'repost') {
+                 // Simplificação: Repost apenas salva no perfil do usuário
+                 alert('Notícia republicada no seu perfil!');
+            }
+        }
+
+        function submitComment(newsId) {
+            const text = $('#comment-text').value.trim();
+            if(!text) return;
+            
+            const commentId = generateId();
+            db.ref(`comments/${newsId}/${commentId}`).set({
+                id: commentId,
+                userId: state.currentUser.uid,
+                username: state.currentUser.username,
+                userAvatar: state.currentUser.avatar,
+                text: text,
+                date: new Date().toISOString()
+            });
+            $('#comment-text').value = '';
+        }
+        
+        function deleteComment(newsId, commentId) {
+            if(confirm('Apagar comentário?')) {
+                db.ref(`comments/${newsId}/${commentId}`).remove();
+            }
+        }
+
+        // --- AUTH & USER ---
+
+        function renderLogin() {
+            $('#app-container').innerHTML = `
+                <div class="auth-container">
+                    <h2 style="margin-bottom:20px; color: var(--g1-red);">Entrar no g1 Brookasil</h2>
+                    <input type="text" id="login-user" class="auth-input" placeholder="@usuario (sem @)">
+                    <input type="password" id="login-pass" class="auth-input" placeholder="Senha">
+                    <button class="btn-primary" onclick="attemptLogin()">Entrar</button>
+                    <button class="btn-secondary" style="width:100%" onclick="router('register')">Criar Conta</button>
+                </div>
+            `;
+        }
+
+        function renderRegister() {
+            $('#app-container').innerHTML = `
+                <div class="auth-container">
+                    <h2 style="margin-bottom:20px; color: var(--g1-red);">Criar Conta</h2>
+                    <input type="text" id="reg-name" class="auth-input" placeholder="Nome Completo">
+                    <input type="text" id="reg-user" class="auth-input" placeholder="@usuario (único)">
+                    <input type="password" id="reg-pass" class="auth-input" placeholder="Senha">
+                    <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px;">Foto de Perfil</label>
+                    <input type="file" id="reg-file" class="auth-input" accept="image/*">
+                    <button class="btn-primary" onclick="attemptRegister()">Cadastrar</button>
+                    <button class="btn-secondary" style="width:100%" onclick="router('login')">Voltar</button>
+                </div>
+            `;
+        }
+
+        async function attemptRegister() {
+            const name = $('#reg-name').value;
+            const username = $('#reg-user').value.toLowerCase().replace(/\s/g, '');
+            const pass = $('#reg-pass').value;
+            const fileInput = $('#reg-file');
+
+            if(!name || !username || !pass) return alert('Preencha tudo.');
+
+            // Checar unicidade
+            let exists = false;
+            await db.ref('users').orderByChild('username').equalTo(username).once('value', s => {
+                if(s.exists()) exists = true;
+            });
+
+            if(exists) return alert('Este usuário já existe!');
+
+            let avatarUrl = 'https://via.placeholder.com/150';
+            if(fileInput.files[0]) {
+                avatarUrl = await toBase64(fileInput.files[0]);
+            }
+
+            const uid = generateId();
+            const newUser = {
+                uid, name, username, password: pass, avatar: avatarUrl, role: 'user', bio: ''
+            };
+
+            // Owner Check Hardcoded
+            if (pass === 'Brookasil1234') newUser.role = 'owner';
+
+            await db.ref(`users/${uid}`).set(newUser);
+            loginUser(newUser);
+        }
+
+        async function attemptLogin() {
+            const username = $('#login-user').value.toLowerCase();
+            const pass = $('#login-pass').value;
+
+            db.ref('users').orderByChild('username').equalTo(username).once('value', snap => {
+                if(!snap.exists()) return alert('Usuário não encontrado.');
+                const userData = Object.values(snap.val())[0];
+                if(userData.password !== pass) return alert('Senha incorreta.');
+                loginUser(userData);
+            });
+        }
+
+        function loginUser(user) {
+            state.currentUser = user;
+            sessionStorage.setItem('g1_user', JSON.stringify(user));
+            router('home');
+        }
+
+        function logout() {
+            state.currentUser = null;
+            sessionStorage.removeItem('g1_user');
+            router('home');
+        }
+
+        function loadSession() {
+            const saved = sessionStorage.getItem('g1_user');
+            if(saved) state.currentUser = JSON.parse(saved);
+            updateHeaderState();
+        }
+
+        // --- EDITOR DE NOTÍCIAS (CMS) ---
+
+        function renderEditor() {
+            if(!state.currentUser || state.currentUser.role === 'user') return router('home');
+
+            $('#app-container').innerHTML = `
+                <div class="auth-container" style="max-width:800px; text-align:left;">
+                    <h2 style="margin-bottom:20px;">Painel de Notícias</h2>
+                    <div class="editor-container">
+                        <label>Título</label>
+                        <input type="text" id="news-title">
+                        <label>Subtítulo</label>
+                        <input type="text" id="news-subtitle">
+                        <label>Categoria (Tema)</label>
+                        <select id="news-theme">
+                            <option>Política</option><option>Polícia</option><option>Educação</option>
+                            <option>Esporte</option><option>Entretenimento</option><option>Curiosidades</option>
+                        </select>
+                        <label>Imagem (Arquivo)</label>
+                        <input type="file" id="news-img" accept="image/*">
+                        <label>Conteúdo (Use Enter para parágrafos)</label>
+                        <textarea id="news-content" style="height:300px"></textarea>
+                        
+                        <button class="btn-primary" onclick="publishNews()">PUBLICAR NOTÍCIA</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function publishNews() {
+            const title = $('#news-title').value;
+            const sub = $('#news-subtitle').value;
+            const theme = $('#news-theme').value;
+            const content = $('#news-content').value;
+            const file = $('#news-img').files[0];
+
+            if(!title || !content) return alert('Título e conteúdo obrigatórios');
+
+            let imgUrl = 'https://via.placeholder.com/800x450';
+            if(file) imgUrl = await toBase64(file);
+
+            const newsId = generateId();
+            const newPost = {
+                id: newsId,
+                title, subtitle: sub, theme, content, image: imgUrl,
+                authorId: state.currentUser.uid,
+                authorName: state.currentUser.name,
+                date: new Date().toISOString(),
+                isHighlight: false
+            };
+
+            await db.ref(`news/${newsId}`).set(newPost);
+            alert('Notícia publicada!');
+            router('home');
+        }
+
+        // --- PERFIL ---
+        function handleProfileClick() {
+            if(state.currentUser) router('profile');
+            else router('login');
+        }
+
+        function renderProfile() {
+            const u = state.currentUser;
+            $('#app-container').innerHTML = `
+                <div class="auth-container" style="max-width:600px;">
+                    <img src="${u.avatar}" style="width:100px; height:100px; border-radius:50%; object-fit:cover;">
+                    <h2>${u.name} ${getRoleBadge(u.role)}</h2>
+                    <p style="color:#666">@${u.username}</p>
+                    <p style="margin:10px 0;">${u.bio || 'Sem biografia.'}</p>
+                    
+                    <div style="text-align:left; margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+                        <h3>Editar Perfil</h3>
+                        <label>Nova Biografia</label>
+                        <input type="text" id="edit-bio" class="auth-input" value="${u.bio || ''}">
+                        <label>Nova Foto</label>
+                        <input type="file" id="edit-img" class="auth-input">
+                        <button class="btn-primary" onclick="saveProfile()">Salvar Alterações</button>
+                    </div>
+
+                    ${u.role === 'owner' ? renderAdminPanel() : ''}
+                </div>
+            `;
+        }
+
+        function renderAdminPanel() {
+            return `
+                <div style="margin-top:30px; border:2px solid red; padding:10px;">
+                    <h3 style="color:red">Área do Dono</h3>
+                    <p>Promover Usuário a Jornalista (@usuario)</p>
+                    <div style="display:flex; gap:5px;">
+                        <input id="promote-user" type="text" class="auth-input" style="margin:0;">
+                        <button onclick="promoteUser()" class="btn-primary" style="width:auto;">OK</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function saveProfile() {
+            const bio = $('#edit-bio').value;
+            const file = $('#edit-img').files[0];
+            let avatar = state.currentUser.avatar;
+
+            if(file) avatar = await toBase64(file);
+
+            const updates = { bio, avatar };
+            await db.ref(`users/${state.currentUser.uid}`).update(updates);
+            
+            // Atualizar sessão local
+            state.currentUser.bio = bio;
+            state.currentUser.avatar = avatar;
+            sessionStorage.setItem('g1_user', JSON.stringify(state.currentUser));
+            
+            alert('Perfil atualizado!');
+            renderProfile();
+        }
+
+        async function promoteUser() {
+            const targetUser = $('#promote-user').value.replace('@','').trim();
+            // Buscar ID pelo username (ineficiente em scale real, ok aqui)
+            let targetId = null;
+            let currentRole = null;
+            
+            // Necessário iterar pois users é indexado por UID, não username
+            for(let uid in state.users) {
+                if(state.users[uid].username === targetUser) {
+                    targetId = uid;
+                    currentRole = state.users[uid].role;
+                    break;
+                }
+            }
+
+            if(targetId) {
+                await db.ref(`users/${targetId}`).update({ role: 'journalist' });
+                alert(`@${targetUser} agora é jornalista.`);
+            } else {
+                alert('Usuário não encontrado.');
+            }
+        }
+
+        // --- DIVULGAÇÃO DE TRABALHO ---
+        function renderDivulgacao() {
+            $('#app-container').innerHTML = `
+                <div class="auth-container" style="max-width:600px; text-align:left;">
+                    <h2 style="color:var(--g1-red);">Divulgação de Trabalho</h2>
+                    <p style="margin-bottom:20px; font-size:0.9rem;">Envie sua oportunidade ou serviço. <strong>Toda divulgação passa por análise do Dono.</strong></p>
+                    
+                    ${state.currentUser ? `
+                        <label>Título do Serviço/Vaga</label>
+                        <input type="text" id="job-title" class="auth-input">
+                        <label>Descrição e Contato</label>
+                        <textarea id="job-desc" class="auth-input" style="height:100px;"></textarea>
+                        <button class="btn-primary" onclick="sendJobRequest()">Enviar para Análise</button>
+                    ` : `<p>Faça login para divulgar.</p>`}
+                </div>
+            `;
+        }
+
+        function sendJobRequest() {
+            const title = $('#job-title').value;
+            const desc = $('#job-desc').value;
+            if(!title || !desc) return alert('Preencha tudo.');
+
+            db.ref('divulgacoes').push({
+                title, desc, 
+                user: state.currentUser.username,
+                status: 'pending',
+                date: new Date().toISOString()
+            });
+            alert('Enviado para análise!');
+            router('home');
+        }
+
+        // --- PESQUISA ---
+        function handleSearch(e) {
+            if(e.key === 'Enter') {
+                const term = e.target.value.toLowerCase();
+                router('search', term);
+            }
+        }
+
+        function renderSearch(term) {
+            const container = $('#app-container');
+            const results = state.news.filter(n => 
+                n.title.toLowerCase().includes(term) || 
+                n.content.toLowerCase().includes(term) ||
+                n.theme.toLowerCase().includes(term)
+            );
+
+            let html = `<h2 style="margin:20px 0;">Resultados para "${term}"</h2>`;
+            if(results.length === 0) html += `<p>Nenhum resultado encontrado.</p>`;
+            else {
+                html += `<div class="feed-grid">`;
+                results.forEach(post => {
+                    html += `
+                        <div class="card" onclick="router('article', '${post.id}')">
+                            <div class="card-img-wrapper"><img src="${post.image}" class="card-img"></div>
+                            <div>
+                                <div class="card-theme">${post.theme}</div>
+                                <h2 class="card-title">${highlightTerm(post.title, term)}</h2>
                             </div>
                         </div>
                     `;
                 });
+                html += `</div>`;
             }
-        },
-
-        // --- 6. DIVULGAÇÃO ---
-        divulga: {
-            render() {
-                const content = document.getElementById('content-area');
-                content.innerHTML = `
-                    <div style="padding: 20px; text-align: center">
-                        <button class="nav-btn-action" onclick="document.getElementById('divulga-modal').style.display='flex'">Solicitar Nova Divulgação</button>
-                        <hr style="margin: 20px 0; border-top: 1px solid #eee;">
-                        <h3>Mural de Divulgações</h3>
-                    </div>
-                    <div id="mural-divulga"></div>
-                `;
-                this.loadMural();
-            },
-            
-            async loadMural() {
-                 const snap = await get(query(ref(db, 'divulgacoes'), orderByChild('status'), equalTo('aprovado')));
-                 const mural = document.getElementById('mural-divulga');
-                 if(!snap.exists()) {
-                     mural.innerHTML = '<p style="text-align:center; color:#777">Nenhuma divulgação ativa.</p>';
-                     return;
-                 }
-                 snap.forEach(c => {
-                     const d = c.val();
-                     mural.innerHTML += `
-                        <div class="news-card" style="background: #f0f7ff; border-left: 4px solid var(--secondary)">
-                            <div class="news-category" style="color: var(--secondary)">${d.category}</div>
-                            <div class="news-title">${d.title}</div>
-                            <div class="news-subtitle">${d.desc}</div>
-                            <small>Anunciante: @${d.username}</small>
-                        </div>
-                     `;
-                 });
-            },
-
-            async submit() {
-                const title = document.getElementById('div-title').value;
-                const desc = document.getElementById('div-desc').value;
-                const cat = document.getElementById('div-cat').value;
-                
-                await push(ref(db, 'divulgacoes'), {
-                    title, desc, category: cat,
-                    status: 'pendente',
-                    userId: app.user.uid,
-                    username: app.user.username,
-                    timestamp: Date.now()
-                });
-                alert("Solicitação enviada! Aguarde aprovação do Dono.");
-                app.ui.closeModals();
-            },
-
-            async approve(id, isApproved) {
-                await update(ref(db, 'divulgacoes/' + id), {
-                    status: isApproved ? 'aprovado' : 'reprovado'
-                });
-                app.admin.render(); // Refresh
-            }
-        },
-
-        // --- UI HELPERS ---
-        ui: {
-            toggleAuthMode() {
-                const loginBox = document.querySelector('#auth-screen .widget-box:nth-child(2)');
-                const regBox = document.getElementById('register-box');
-                if(loginBox.style.display !== 'none') {
-                    loginBox.style.display = 'none';
-                    regBox.style.display = 'block';
-                } else {
-                    loginBox.style.display = 'block';
-                    regBox.style.display = 'none';
-                }
-            },
-
-            async createNewsCard(news) {
-                // Verificar se o usuário atual deu like
-                let liked = false;
-                try {
-                    const lSnap = await get(ref(db, `likes/${news.id}/${app.user.uid}`));
-                    if(lSnap.exists()) liked = true;
-                } catch(e){}
-
-                // Verificar se é dono ou autor para mostrar botão editar
-                let editBtn = '';
-                if(app.user.role === 'admin' || app.user.uid === news.authorId) {
-                    editBtn = `<button onclick="app.ui.openPostModal('${news.id}')" style="margin-left: auto; color: var(--text-sec)"><i class="fas fa-ellipsis-h"></i></button>`;
-                }
-
-                // Gerar Avatar fake based on name
-                const avatar = `https://ui-avatars.com/api/?name=${news.author}&background=random&size=32`;
-
-                return `
-                <article class="news-card">
-                    <div class="news-meta">
-                        <img src="${avatar}" class="news-author-img">
-                        <span style="font-weight: 700; color: #0f1419;">${news.author}</span>
-                        <span>@${news.authorUser || 'jornalista'}</span>
-                        <span>·</span>
-                        <span>${new Date(news.timestamp).toLocaleDateString()}</span>
-                        ${editBtn}
-                    </div>
-                    <div class="news-category">${news.category}</div>
-                    <h3 class="news-title">${news.title}</h3>
-                    <p class="news-subtitle">${news.subtitle}</p>
-                    <p style="margin-top:10px; white-space: pre-wrap;">${news.content}</p>
-                    
-                    <div class="news-actions">
-                        <button class="action-btn blue" onclick="alert('Comentários em desenvolvimento')">
-                            <i class="far fa-comment"></i> <span>0</span>
-                        </button>
-                        <button class="action-btn green" onclick="app.interactions.repost('${news.id}')">
-                            <i class="fas fa-retweet"></i>
-                        </button>
-                        <button id="like-btn-${news.id}" class="action-btn red ${liked ? 'liked' : ''}" onclick="app.interactions.toggleLike('${news.id}')">
-                            ${liked ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>'}
-                            <span id="like-count-${news.id}">${news.likes || 0}</span>
-                        </button>
-                        <button class="action-btn blue" onclick="app.interactions.copyLink('${news.id}')">
-                            <i class="fas fa-share-square"></i>
-                        </button>
-                    </div>
-                </article>
-                `;
-            },
-
-            async renderProfile(userData) {
-                const content = document.getElementById('content-area');
-                
-                content.innerHTML = `
-                    <div style="background: #cfd9de; height: 150px;"></div>
-                    <div style="padding: 20px; position: relative;">
-                        <img src="${userData.avatar}" style="width: 130px; height: 130px; border-radius: 50%; border: 4px solid white; position: absolute; top: -65px;">
-                        <div style="text-align: right;">
-                            <button onclick="alert('Editar Perfil em desenvolvimento')" style="border: 1px solid #cfd9de; padding: 8px 16px; border-radius: 20px; font-weight: bold;">Editar Perfil</button>
-                        </div>
-                        <h2 style="margin-top: 10px; font-weight: 800;">${userData.name}</h2>
-                        <div style="color: var(--text-sec)">@${userData.username}</div>
-                        <p style="margin-top: 10px;">${userData.bio || 'Sem biografia.'}</p>
-                        <div style="margin-top: 10px; color: var(--text-sec);"><i class="far fa-calendar-alt"></i> Usuário do Brookasil</div>
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid var(--border)">
-                    <div style="padding: 20px; font-weight: 800; border-bottom: 2px solid var(--primary); display: inline-block;">Republicações</div>
-                    <div id="profile-reposts"></div>
-                `;
-
-                // Carregar Reposts
-                const repostsSnap = await get(ref(db, `reposts/${userData.uid}`));
-                const repostList = document.getElementById('profile-reposts');
-                
-                if(!repostsSnap.exists()) {
-                    repostList.innerHTML = '<p style="padding:20px; color:#777">Nenhuma republicação.</p>';
-                    return;
-                }
-
-                repostsSnap.forEach(async (c) => {
-                    const newsId = c.key;
-                    const newsSnap = await get(ref(db, `news/${newsId}`));
-                    if(newsSnap.exists()) {
-                        const card = await app.ui.createNewsCard({id: newsId, ...newsSnap.val()});
-                        repostList.innerHTML += `<div style="padding: 10px; font-size: 0.8rem; color: var(--text-sec)"><i class="fas fa-retweet"></i> Republicado</div>` + card;
-                    }
-                });
-            },
-
-            async openPostModal(editId = null) {
-                const modal = document.getElementById('post-modal');
-                const title = modal.querySelector('h2');
-                
-                // Limpar campos
-                document.getElementById('post-id').value = '';
-                document.getElementById('post-title').value = '';
-                document.getElementById('post-subtitle').value = '';
-                document.getElementById('post-content').value = '';
-
-                if (editId) {
-                    title.innerText = "Editar Notícia";
-                    const snap = await get(ref(db, `news/${editId}`));
-                    if (snap.exists()) {
-                        const data = snap.val();
-                        document.getElementById('post-id').value = editId;
-                        document.getElementById('post-title').value = data.title;
-                        document.getElementById('post-subtitle').value = data.subtitle;
-                        document.getElementById('post-content').value = data.content;
-                        document.getElementById('post-category').value = data.category;
-                    }
-                } else {
-                    title.innerText = "Nova Notícia";
-                    if (app.user.role !== 'admin' && app.user.role !== 'journalist') {
-                        // Verifica se user comum pode postar? Regra diz: Dono e Jornalista.
-                        // Mas vou permitir ao Dono adicionar jornalistas depois. 
-                        // Por padrão, se for "user", bloqueia.
-                        if (app.user.role === 'user') return alert("Apenas jornalistas podem postar.");
-                    }
-                }
-                modal.style.display = 'flex';
-            },
-
-            closeModals() {
-                document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            }
-        },
-
-        init() {
-            if (app.user.role === 'admin') {
-                document.getElementById('nav-admin').style.display = 'flex';
-            }
-            app.router.go('home');
+            container.innerHTML = html;
         }
-    };
 
-    // Inicialização
-    app.auth.check();
+        // --- HELPERS ---
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
 
-</script>
+        function getTimeAgo(dateString) {
+            const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " anos atrás";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " meses atrás";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " dias atrás";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " horas atrás";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutos atrás";
+            return "Agora mesmo";
+        }
+
+        function formatArticleBody(text) {
+            // Converte quebras de linha em parágrafos
+            return text.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
+        }
+
+        function highlightTerm(text, term) {
+            const regex = new RegExp(`(${term})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+        
+        function getRoleBadge(role) {
+            if(role === 'owner') return '<span class="badge badge-owner">DONO</span>';
+            if(role === 'journalist') return '<span class="badge badge-journ">JORNALISTA</span>';
+            return '';
+        }
+
+        function shareLink() {
+            alert('Link copiado para a área de transferência!');
+        }
+
+    </script>
 </body>
 </html>
